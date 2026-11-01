@@ -86,6 +86,19 @@ Next direction (not started): lean further into the plea as a *manuscript
 you write to the golem*, with a page-like plea screen and more of a letter
 than a form, and reword the golem's lines in `GolemVoice` to match.
 
+## 9. The golem wants to sleep; the limit is drastic (2026-11-01)
+
+The character: scrolling wakes the golem and makes him watch over you. He
+puts up with it within your limit (white eyes) and gets angry past it: red
+eyes, a red timer counting past the limit, and "Plead with the Golem". All
+wording lives in `GolemVoice`. The switch to red happens on its own at the
+limit, because the limit is the Live Activity's *stale date* and iOS
+redraws it then. iOS can't pop the Island open at that moment (that needs
+the app's code running, or a server push). So the pop-up happens when you
+reopen a group's app past its limit, which runs Golem's code via the
+automation. The "time's up" notification stays for now, so the owner can
+see how it feels; it may be removed.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

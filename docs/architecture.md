@@ -31,13 +31,16 @@ information in two ways:
         ▼
  SessionCoordinator.appOpened
         │  SessionTracker: Reels starts/continues (other groups pause)
-        │  LiveTimer.show → Dynamic Island shows mm:ss, stops at the limit
+        │  LiveTimer.show → Dynamic Island shows white eyes + mm:ss
+        │  (limit set as the stale date: iOS turns it red at the limit)
         │  "Time's up" notification scheduled for the limit
         ▼
  You switch to TikTok (same group)
         │  "closed" + "opened" arrive within a moment → one visit, timer keeps going
         ▼
- Time runs out → notification "Tap to plead" → Golem opens the plea screen
+ Time runs out → Island turns red ("Plead with the Golem" on long-press)
+        │  + notification "Tap to plead" → Golem opens the plea screen
+        │  Reopening the app past the limit pops the Island open, red.
         │  wait the countdown + write a reason (PleaRules)
         ▼
  Granted: the group gets `grantedMinutes` more, counted from now

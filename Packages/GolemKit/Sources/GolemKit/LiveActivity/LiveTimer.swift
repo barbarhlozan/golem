@@ -14,27 +14,44 @@ public enum LiveTimer {
             return
         }
 
-        let state = GolemActivityAttributes.ContentState(
-            startedAt: session.startDate(at: now),
-            limitAt: session.limitDate(limitMinutes: limitMinutes, at: now),
-            isOverLimit: session.isOverLimit(limitMinutes: limitMinutes, at: now)
+        let limitAt = session.limitDate(limitMinutes: limitMinutes, at: now)
+        let isOverLimit = session.isOverLimit(limitMinutes: limitMinutes, at: now)
+        let content = ActivityContent(
+            state: GolemActivityAttributes.ContentState(
+                startedAt: session.startDate(at: now),
+                limitAt: limitAt,
+                isOverLimit: isOverLimit
+            ),
+            // At the limit iOS marks the timer stale and redraws it, which is
+            // how the golem turns angry (red) without any code running then.
+            staleDate: isOverLimit ? nil : limitAt
         )
+
         do {
-            _ = try Activity.request(
+            let activity = try Activity.request(
                 attributes: GolemActivityAttributes(groupName: groupName),
-                content: ActivityContent(state: state, staleDate: nil)
+                content: content
             )
+            // Back in the group's apps although the time is up: pop the
+            // Island open so it can't be missed.
+            if isOverLimit {
+                await activity.update(content, alertConfiguration: AlertConfiguration(
+                    title: LocalizedStringResource(stringLiteral: GolemVoice.angryAlertTitle),
+                    body: LocalizedStringResource(stringLiteral: GolemVoice.angryAlertBody(groupName: groupName)),
+                    sound: .default
+                ))
+            }
         } catch {
             logger.error("Couldn't start the live timer: \(error.localizedDescription)")
         }
     }
-
-    private static let logger = Logger(subsystem: "cz.hlozanek.golem", category: "LiveTimer")
 
     public static func hide() async {
         for activity in Activity<GolemActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
     }
+
+    private static let logger = Logger(subsystem: "cz.hlozanek.golem", category: "LiveTimer")
 }
 #endif

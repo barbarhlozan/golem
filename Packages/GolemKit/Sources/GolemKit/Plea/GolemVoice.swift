@@ -2,15 +2,19 @@ import Foundation
 
 /// Every sentence the Golem says, in one place, so its personality
 /// can be rewritten without hunting through screens and extensions.
+///
+/// The character: the golem wants to sleep. Scrolling wakes him up and
+/// makes him watch over you. Within your limit he puts up with it; past it
+/// he's grumpy, and you have to plead for him to stay up a little longer.
 public enum GolemVoice {
-    // MARK: Shield screen
+    // MARK: Shield screen (and the home screen's "time's up" section)
 
-    public static let shieldTitle = "The Golem is watching"
+    public static let shieldTitle = "You woke the Golem"
 
     public static func shieldSubtitle(appName: String?, minutes: Int?) -> String {
         let app = appName ?? "this"
-        guard let minutes else { return "You've been on \(app) long enough. Is it worth it?" }
-        return "You've been on \(app) for \(minutes) min. Is it worth it?"
+        guard let minutes else { return "He's been watching you scroll \(app). He'd rather be asleep." }
+        return "He's watched you scroll \(app) for \(minutes) min. He'd rather be asleep."
     }
 
     public static let closeButton = "Close app"
@@ -18,43 +22,44 @@ public enum GolemVoice {
 
     // MARK: Notifications
 
-    public static let limitReachedTitle = "Time's up"
+    public static let limitReachedTitle = "The Golem is awake. And grumpy."
 
     public static func limitReachedBody(groupName: String, minutes: Int) -> String {
-        "You've spent \(minutes) min on \(groupName). Tap to plead with the Golem."
+        "\(minutes) min of \(groupName) and he still can't sleep. Tap to plead with him."
     }
 
     public static let pleaNotificationTitle = "The Golem will hear you"
-    public static let pleaNotificationBody = "Tap to make your case."
+    public static let pleaNotificationBody = "Make it quick. He wants to sleep."
 
     // MARK: Live timer
 
-    public static let timeUpLabel = "Time's up"
+    /// Shown when the Island pops open because you're back past your limit.
+    public static let angryAlertTitle = "The Golem is up again"
 
-    public static func limitLabel(minutes: Int) -> String {
-        "of \(minutes) min"
+    public static func angryAlertBody(groupName: String) -> String {
+        "Your \(groupName) time is up. Plead with him or let him sleep."
     }
 
     // MARK: Plea screen
 
     public static let pleaTitle = "Plead with the Golem"
-    public static let pleaReasonPrompt = "Why do you need more time?"
+    public static let pleaReasonPrompt = "Why must he stay awake?"
 
     public static func overLimitTitle(groupName: String) -> String {
-        "\(groupName): time's up"
+        "\(groupName): he wants to sleep"
     }
 
     public static func waitHint(secondsLeft: Int) -> String {
-        "The Golem is thinking… \(secondsLeft)s"
+        "The Golem grumbles… \(secondsLeft)s"
     }
 
     public static func reasonHint(charactersLeft: Int) -> String {
-        "Say a bit more (\(charactersLeft) more characters)."
+        "He's not convinced. Say more (\(charactersLeft) characters)."
     }
 
     public static func grantButton(minutes: Int) -> String {
-        "Ask for \(minutes) more minutes"
+        "Keep him up \(minutes) more minutes"
     }
 
-    public static let giveUpButton = "Never mind"
+    public static let giveUpButton = "Let him sleep"
 }
