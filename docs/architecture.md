@@ -33,15 +33,15 @@ information in two ways:
         │  SessionTracker: Reels starts/continues (other groups pause)
         │  LiveTimer.show → Dynamic Island shows white eyes + mm:ss
         │  (limit set as the stale date: iOS turns it red at the limit)
-        │  iOS 26+: a red "pop-up" Live Activity is booked to start at the
-        │  limit by itself; older iOS: a "time's up" notification instead
+        │  iOS 26+: red "pop-up" Live Activities are booked to start at the
+        │  limit and every 10 s after; older iOS: a "time's up" notification
         ▼
  You switch to TikTok (same group)
         │  "closed" + "opened" arrive within a moment → one visit, timer keeps going
         ▼
  Time runs out → the Island pops open, red: "Why are you keeping me awake?"
         │  (older iOS: it turns red, plus the notification)
-        │  Reopening the app past the limit pops it open again.
+        │  Reopening the app past the limit pops it open again (and rebooks).
         │  Tapping it → Golem opens the plea screen
         │  wait the countdown + write a reason (PleaRules)
         ▼

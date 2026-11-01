@@ -36,11 +36,10 @@ public enum GolemVoice {
     // Past the limit he speaks for himself here, like on the plea screen.
 
     public static let islandQuestion = "Why are you keeping me awake?"
-    public static let islandPrompt = "Just tell me."
 
     /// The alert's text where there's no Dynamic Island (e.g. Apple Watch).
     public static func islandAlertBody(groupName: String) -> String {
-        "Your \(groupName) time is up. Just tell me."
+        "Your \(groupName) time is up. Tap to answer."
     }
 
     // MARK: Plea screen

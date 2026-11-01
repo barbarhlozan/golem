@@ -13,7 +13,9 @@ import OSLog
 /// before then. On older iOS the timer just turns red at the limit (its
 /// stale date) and a "time's up" notification fires instead.
 ///
-/// Reopening an app past the limit pops the Island open again.
+/// Past the limit he keeps demanding an answer every few seconds: more
+/// pop-ups are booked the same way. Reopening an app past the limit pops
+/// the Island open again and books the next ones.
 ///
 /// Call it through `SessionCoordinator`, which makes sure events are
 /// handled one after another (a "show" racing a "hide" left the Island up).
@@ -34,7 +36,7 @@ public enum LiveTimer {
         let attributes = GolemActivityAttributes(groupID: group.id, groupName: group.name)
 
         if state.isOverLimit {
-            await showAngry(attributes, state: state)
+            await showAngry(attributes, state: state, at: now)
         } else {
             await showWatching(attributes, state: state)
         }
@@ -52,8 +54,7 @@ public enum LiveTimer {
 
     private static func showWatching(_ attributes: GolemActivityAttributes, state: GolemActivityAttributes.ContentState) async {
         // At the limit iOS marks it stale and redraws it red. On iOS 26+
-        // the scheduled pop-up takes the Island's main spot then, and this
-        // one stays beside it as a small bubble with red eyes.
+        // the booked pop-ups take over the Island from then on.
         let content = ActivityContent(state: state, staleDate: state.limitAt)
         let all = Activity<GolemActivityAttributes>.activities
         let mine = all.filter { $0.attributes.groupID == attributes.groupID }
@@ -61,8 +62,10 @@ public enum LiveTimer {
         // Still in this group (switching between its apps): update in place
         // instead of flickering it away and back.
         let watching = mine.first { !$0.content.state.isOverLimit && $0.activityState == .active }
-        let popUp = mine.first { isPending($0) && $0.content.state.limitAt == state.limitAt }
-        for other in all where other.id != watching?.id && other.id != popUp?.id {
+        // Already booked for this limit (e.g. switching between the group's apps).
+        let popUps = mine.filter { isPending($0) && $0.content.state.limitAt == state.limitAt }
+        let keep = Set(popUps.map(\.id) + [watching?.id].compactMap { $0 })
+        for other in all where !keep.contains(other.id) {
             await other.end(nil, dismissalPolicy: .immediate)
         }
 
@@ -78,42 +81,56 @@ public enum LiveTimer {
             }
         }
 
-        if popUp == nil {
-            schedulePopUp(attributes, state: state)
+        if popUps.isEmpty {
+            schedulePopUps(attributes, state: state, from: state.limitAt)
         }
     }
 
-    private static func schedulePopUp(_ attributes: GolemActivityAttributes, state: GolemActivityAttributes.ContentState) {
+    /// How often the golem demands an answer once you're past the limit.
+    static let popUpInterval: TimeInterval = 10
+
+    /// iOS allows an app 5 Live Activities at a time (booked ones count),
+    /// so one timer plus 4 pop-ups. That's 40 s of demands; reopening an
+    /// app past the limit books 4 more.
+    static let maxActivities = 5
+
+    private static func schedulePopUps(_ attributes: GolemActivityAttributes, state: GolemActivityAttributes.ContentState, from first: Date) {
         guard #available(iOS 26.0, *), canShow else { return }
         var angry = state
         angry.isOverLimit = true
-        do {
-            _ = try Activity.request(
-                attributes: attributes,
-                content: angryContent(angry),
-                style: .standard,
-                alertConfiguration: alert(groupName: attributes.groupName),
-                start: state.limitAt
-            )
-            logger.info("Pop-up booked for \(attributes.groupName) at \(state.limitAt)")
-        } catch {
-            logger.error("Couldn't book the pop-up: \(error.localizedDescription)")
+        for index in 0..<(maxActivities - 1) {
+            let start = first.addingTimeInterval(Double(index) * popUpInterval)
+            do {
+                _ = try Activity.request(
+                    attributes: attributes,
+                    // The newest one takes the Island.
+                    content: angryContent(angry, relevance: start.timeIntervalSinceReferenceDate),
+                    style: .standard,
+                    alertConfiguration: alert(groupName: attributes.groupName),
+                    start: start
+                )
+            } catch {
+                logger.error("Couldn't book pop-up \(index): \(error.localizedDescription)")
+                return
+            }
         }
+        logger.info("Pop-ups booked for \(attributes.groupName) from \(first)")
     }
 
     // MARK: Past the limit
 
     /// Back in the group's apps although the time is up: pop the Island
-    /// open so it can't be missed, every time.
-    private static func showAngry(_ attributes: GolemActivityAttributes, state: GolemActivityAttributes.ContentState) async {
-        let content = angryContent(state)
+    /// open so it can't be missed, every time, and book the next demands.
+    private static func showAngry(_ attributes: GolemActivityAttributes, state: GolemActivityAttributes.ContentState, at now: Date) async {
+        let content = angryContent(state, relevance: now.timeIntervalSinceReferenceDate)
         let all = Activity<GolemActivityAttributes>.activities
         let angry = all.first {
             $0.attributes.groupID == attributes.groupID
                 && $0.content.state.isOverLimit
                 && $0.activityState == .active
         }
-        // Golem's code runs now, so the calm one (the extra bubble) can go.
+        // Golem's code runs now, so it can clear out the rest (the calm
+        // timer, used-up pop-ups, ones still booked) to make room.
         for other in all where other.id != angry?.id {
             await other.end(nil, dismissalPolicy: .immediate)
         }
@@ -132,13 +149,14 @@ public enum LiveTimer {
         }
         await activity.update(content, alertConfiguration: alert(groupName: attributes.groupName))
         logger.info("Angry for \(attributes.groupName)")
+        schedulePopUps(attributes, state: state, from: now.addingTimeInterval(popUpInterval))
     }
 
     // MARK: Helpers
 
     /// The angry one wins the Island's main spot over the calm one.
-    private static func angryContent(_ state: GolemActivityAttributes.ContentState) -> ActivityContent<GolemActivityAttributes.ContentState> {
-        ActivityContent(state: state, staleDate: nil, relevanceScore: 100)
+    private static func angryContent(_ state: GolemActivityAttributes.ContentState, relevance: Double) -> ActivityContent<GolemActivityAttributes.ContentState> {
+        ActivityContent(state: state, staleDate: nil, relevanceScore: relevance)
     }
 
     /// On iPhones with a Dynamic Island the alert shows the expanded view;
@@ -147,9 +165,13 @@ public enum LiveTimer {
         AlertConfiguration(
             title: LocalizedStringResource(stringLiteral: GolemVoice.islandQuestion),
             body: LocalizedStringResource(stringLiteral: GolemVoice.islandAlertBody(groupName: groupName)),
-            sound: .default
+            sound: .named(knockSound)
         )
     }
+
+    /// A soft knock instead of the default alert sound, which (with its
+    /// buzz) was too much every 10 s. In the app's bundle.
+    private static let knockSound = "golem-knock.caf"
 
     private static func isPending(_ activity: Activity<GolemActivityAttributes>) -> Bool {
         if #available(iOS 26.0, *) { return activity.activityState == .pending }

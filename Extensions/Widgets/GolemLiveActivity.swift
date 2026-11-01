@@ -49,7 +49,11 @@ struct GolemLiveActivity: Widget {
                 // golem's question go in the space below.
                 DynamicIslandExpandedRegion(.bottom) {
                     if angry {
-                        GolemQuestion()
+                        Text(GolemVoice.islandQuestion)
+                            .font(.system(.title3, design: .serif).weight(.semibold))
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
                     } else {
                         LimitBar(state: context.state)
                     }
@@ -62,8 +66,6 @@ struct GolemLiveActivity: Widget {
                 TimerText(state: context.state, isAngry: angry)
                     .font(.system(size: 15, weight: .semibold).monospacedDigit())
             } minimal: {
-                // Also the small bubble beside the Island once the pop-up
-                // at the limit has taken the main spot.
                 GolemEyes(isAngry: angry)
             }
             .keylineTint(angry ? .red : nil)
@@ -148,22 +150,6 @@ private struct LimitBar: View {
         .tint(.white)
         .padding(.horizontal, 8)
         .padding(.top, 4)
-    }
-}
-
-/// Past the limit: the golem asks why he's still awake.
-private struct GolemQuestion: View {
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(GolemVoice.islandQuestion)
-                .font(.system(.title3, design: .serif).weight(.semibold))
-                .foregroundStyle(.red)
-            Text(GolemVoice.islandPrompt)
-                .font(.system(.subheadline, design: .serif))
-                .foregroundStyle(.white.opacity(0.7))
-        }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
     }
 }
 
