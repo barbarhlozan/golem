@@ -2,7 +2,7 @@ import AppIntents
 import GolemKit
 
 /// A Golem group as Shortcuts sees it, so an automation can say
-/// "When Instagram is opened → Golem: App Opened in *Social*".
+/// "When Instagram is opened → Golem: App Opened in *Reels*".
 struct WatchGroupEntity: AppEntity {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Golem Group"
     static let defaultQuery = WatchGroupQuery()

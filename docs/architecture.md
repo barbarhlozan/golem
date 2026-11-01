@@ -27,10 +27,10 @@ information in two ways:
 
 ```
  You open Instagram
-        │  Shortcuts automation → AppOpenedIntent(Social)
+        │  Shortcuts automation → AppOpenedIntent(Reels)
         ▼
  SessionCoordinator.appOpened
-        │  SessionTracker: Social starts/continues (other groups pause)
+        │  SessionTracker: Reels starts/continues (other groups pause)
         │  LiveTimer.show → Dynamic Island shows mm:ss, stops at the limit
         │  "Time's up" notification scheduled for the limit
         ▼

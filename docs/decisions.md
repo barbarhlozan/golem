@@ -44,7 +44,8 @@ couldn't be verified without a paid account, so it wasn't built.
 
 ## 6. Groups with their own timer and limit (2026-11-01)
 
-Apps are sorted into groups (e.g. Social, News). Apps in one group share a
+Apps are sorted into groups the user creates (Golem starts with Reels
+and Feeds as examples; one group per app works too). Apps in one group share a
 timer: Instagram → TikTok → Instagram is one session. Each group has its own
 limit, and the plea rules are shared. Only one group runs at a time. A group's
 timer resets after a break (default 10 min, adjustable). "Closed" and

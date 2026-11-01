@@ -104,7 +104,7 @@ struct HomeView: View {
         } header: {
             Text("Groups")
         } footer: {
-            Text("Apps in the same group share one timer. Each group has its own limit.")
+            Text("Apps in the same group share one timer, and each group has its own limit. Bundle similar apps, or make one group per app.")
         }
     }
 
