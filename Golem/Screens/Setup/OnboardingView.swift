@@ -1,8 +1,8 @@
 import GolemKit
 import SwiftUI
 
-/// The first run: who the golem is, your groups, notifications, and the
-/// automations. Shown once; `GolemApp` swaps it for the home screen when
+/// The first run: six story pages on how the golem works, then your groups,
+/// notifications, and the automations. Shown once; `GolemApp` swaps it for the home screen when
 /// `hasOnboarded` turns true (the debug menu can turn it back off).
 struct OnboardingView: View {
     @Environment(GolemModel.self) private var model
@@ -11,10 +11,13 @@ struct OnboardingView: View {
     static let doneKey = "hasOnboarded"
 
     private enum Page: Int, CaseIterable {
-        case intro, groups, notifications, automations
+        // The story, one idea per page (texts in `GolemVoice.storyPages`).
+        case meet, oneSession, backToSleep, breakReset, angry, plead
+        // Setting things up.
+        case groups, notifications, automations
     }
 
-    @State private var page = Page.intro
+    @State private var page = Page.meet
 
     var body: some View {
         VStack(spacing: 0) {
@@ -43,8 +46,8 @@ struct OnboardingView: View {
     @ViewBuilder
     private var content: some View {
         switch page {
-        case .intro:
-            header(GolemVoice.introTitle, GolemVoice.introBody, golemHeight: 220)
+        case .meet, .oneSession, .backToSleep, .breakReset, .angry, .plead:
+            storyPage(page.rawValue)
         case .groups:
             VStack(spacing: 24) {
                 header(GolemVoice.groupsTitle, GolemVoice.groupsBody, golemHeight: 120)
@@ -64,6 +67,19 @@ struct OnboardingView: View {
         }
     }
 
+    /// One story page: its own drawing, a title and a line of text.
+    private func storyPage(_ index: Int) -> some View {
+        let story = GolemVoice.storyPages(breakMinutes: model.settings.breakMinutes)[index]
+        return VStack(spacing: 16) {
+            StoryDrawing(number: index + 1)
+            Text(story.title)
+                .golemLine()
+                .multilineTextAlignment(.center)
+            Text(story.body)
+                .multilineTextAlignment(.center)
+        }
+    }
+
     private func header(_ title: String, _ body: String, golemHeight: CGFloat) -> some View {
         VStack(spacing: 16) {
             GolemFigure(height: golemHeight)
@@ -80,7 +96,7 @@ struct OnboardingView: View {
     private var buttons: some View {
         VStack(spacing: 12) {
             switch page {
-            case .intro, .groups:
+            case .meet, .oneSession, .backToSleep, .breakReset, .angry, .plead, .groups:
                 primary(GolemVoice.continueButton) { advance(from: page) }
             case .notifications:
                 primary(GolemVoice.allowNotificationsButton) {
@@ -110,6 +126,26 @@ struct OnboardingView: View {
             page = following
         } else {
             hasOnboarded = true
+        }
+    }
+}
+
+/// The drawing for story page `number` ("Onboarding1"…"Onboarding6" in the
+/// asset catalog). Until the owner's drawing is there, the golem stands in.
+private struct StoryDrawing: View {
+    let number: Int
+
+    private var name: String { "Onboarding\(number)" }
+
+    var body: some View {
+        if UIImage(named: name) != nil {
+            Image(name)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 220)
+                .accessibilityHidden(true)
+        } else {
+            GolemFigure(height: 220)
         }
     }
 }

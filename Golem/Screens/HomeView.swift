@@ -139,16 +139,7 @@ private struct GolemMood: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            GolemFigure(height: 200)
-                .overlay(alignment: .topTrailing) {
-                    if !isAngry {
-                        // Not blackletter: its "z" reads as a "3".
-                        Text("z z z")
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .offset(x: 24, y: -8)
-                    }
-                }
+            GolemFigure(height: 200, isAsleep: !isAngry)
             Text(isAngry ? GolemVoice.homeAngry : GolemVoice.homeAsleep)
                 .golemLine()
                 .multilineTextAlignment(.center)

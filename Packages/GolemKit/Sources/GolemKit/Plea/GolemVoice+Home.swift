@@ -17,8 +17,24 @@ extension GolemVoice {
 
     // MARK: First run
 
-    public static let introTitle = "Meet the Golem"
-    public static let introBody = "He wants to sleep. Every scroll wakes him, and once you're past your limit he gets angry. Then you'll have to plead for more time."
+    /// The story pages at the start of the first run, in order: title and
+    /// text. Each page has its own drawing ("Onboarding1"…"Onboarding6").
+    public static func storyPages(breakMinutes: Int) -> [(title: String, body: String)] {
+        [
+            ("Meet your golem",
+             "The Golem guards your attention. You wake it up by opening an app you've chosen to track."),
+            ("One session at a time",
+             "It doesn't count your whole day, because iOS already does that. The Golem only watches how long you stay in a tracked app in one go."),
+            ("Put the golem back to sleep",
+             "If you leave the app before your limit, the Golem goes back to sleep."),
+            ("Break from the awakening",
+             "Stay out of the app for \(breakMinutes) minutes and your timer resets so you can wake the golem up again."),
+            ("Stay too long and it gets angry",
+             "When you pass your limit, the Golem will interrupt you and ask why you're still there."),
+            ("Plead your case",
+             "Give the Golem a good reason and it might grant you more time."),
+        ]
+    }
 
     public static let groupsTitle = "What wakes him"
     public static let groupsBody = "Apps in a group share one timer and one limit. Start with these, or rename them."
