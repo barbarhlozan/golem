@@ -9,6 +9,15 @@ import Observation
 @MainActor
 @Observable
 final class GolemModel {
+    /// The simulator has no Screen Time, so there the app pretends access was
+    /// granted and skips the real monitoring and shields. This lets you click
+    /// through every screen; the real behaviour needs an iPhone.
+    #if targetEnvironment(simulator)
+    static let isPreviewMode = true
+    #else
+    static let isPreviewMode = false
+    #endif
+
     private let store = SharedStore()
 
     var settings: GolemSettings {
@@ -31,14 +40,14 @@ final class GolemModel {
     init() {
         settings = store.settings
         watchedApps = WatchedApps.load(from: store)
-        isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
+        isAuthorized = Self.isPreviewMode || AuthorizationCenter.shared.authorizationStatus == .approved
         isShieldUp = store.isShieldUp
     }
 
     /// Re-reads state the extensions may have changed while the app was closed.
     func refresh() {
         isShieldUp = store.isShieldUp
-        isAuthorized = AuthorizationCenter.shared.authorizationStatus == .approved
+        isAuthorized = Self.isPreviewMode || AuthorizationCenter.shared.authorizationStatus == .approved
     }
 
     func requestAuthorization() async {
@@ -52,6 +61,10 @@ final class GolemModel {
     }
 
     func startWatching() {
+        if Self.isPreviewMode {
+            settings.isWatching = true
+            return
+        }
         do {
             try Monitoring.start(limitMinutes: settings.limitMinutes, store: store)
             settings.isWatching = true
@@ -61,8 +74,12 @@ final class GolemModel {
     }
 
     func stopWatching() {
-        Monitoring.stop()
-        Shields.lower(store: store)
+        if Self.isPreviewMode {
+            store.isShieldUp = false
+        } else {
+            Monitoring.stop()
+            Shields.lower(store: store)
+        }
         settings.isWatching = false
         refresh()
     }
@@ -70,12 +87,25 @@ final class GolemModel {
     /// Called when a plea succeeded: unblock the apps and give
     /// `grantedMinutes` before the Golem steps in again.
     func grantMoreTime() {
+        if Self.isPreviewMode {
+            store.isShieldUp = false
+            refresh()
+            return
+        }
         Shields.lower(store: store)
         do {
             try Monitoring.start(limitMinutes: settings.pleaRules.grantedMinutes, store: store)
         } catch {
             errorMessage = "Couldn't restart the timer: \(error.localizedDescription)"
         }
+        refresh()
+    }
+
+    /// Preview mode only: act as if the limit was just reached,
+    /// the way the Monitor extension would on a real iPhone.
+    func simulateLimitReached() {
+        guard Self.isPreviewMode else { return }
+        store.isShieldUp = true
         refresh()
     }
 }

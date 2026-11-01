@@ -24,6 +24,9 @@ struct HomeView: View {
                     appsSection
                     SettingsSection(settings: $model.settings)
                     watchingSection
+                    if GolemModel.isPreviewMode {
+                        previewSection
+                    }
                 }
             }
             .navigationTitle("Golem")
@@ -82,12 +85,23 @@ struct HomeView: View {
                 Button("Stop watching", role: .destructive) { model.stopWatching() }
             } else {
                 Button("Start watching") { model.startWatching() }
-                    .disabled(model.watchedApps.isEmpty)
+                    .disabled(model.watchedApps.isEmpty && !GolemModel.isPreviewMode)
             }
         } footer: {
             if model.settings.isWatching {
                 Text("Changes to the limit apply the next time you start watching.")
             }
+        }
+    }
+
+    private var previewSection: some View {
+        Section {
+            Button("Simulate limit reached") { model.simulateLimitReached() }
+                .disabled(!model.settings.isWatching || model.isShieldUp)
+        } header: {
+            Text("Preview mode")
+        } footer: {
+            Text("The simulator has no Screen Time, so app picking, monitoring and the real shield only work on an iPhone. Use this to try the plea flow.")
         }
     }
 }

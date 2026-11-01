@@ -64,4 +64,7 @@ lowers the shield.
   extension gets a readable name (`localizedDisplayName`), and only the app can
   draw icons (`Label(token)`).
 - **One limit for the whole group.** All watched apps share one counter.
-- **No simulator.** Shields and monitoring only run on a real device.
+- **No simulator.** Shields and monitoring only run on a real device. In the
+  Simulator the app runs in preview mode (see `GolemModel.isPreviewMode`):
+  access counts as granted, and "Simulate limit reached" stands in for the
+  Monitor extension.

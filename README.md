@@ -32,6 +32,14 @@ Run the shared-logic tests without a simulator:
 cd Packages/GolemKit && swift test
 ```
 
+### Trying it in the Simulator
+
+The Simulator has no Screen Time, so Golem runs in **preview mode** there
+(`GolemModel.isPreviewMode`). It skips the access request, lets you start
+watching without picking apps, and adds a **Simulate limit reached** button.
+That's enough to click through the settings and the whole plea flow. App
+picking, monitoring and the real shield need an iPhone.
+
 ### Running on a real iPhone
 
 Screen Time features (the app picker, monitoring, shields) **only work on a
