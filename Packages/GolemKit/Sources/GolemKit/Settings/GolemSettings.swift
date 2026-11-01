@@ -9,17 +9,12 @@ public struct GolemSettings: Codable, Equatable, Sendable {
     /// The groups of apps, each with its own timer and limit.
     public var groups: [WatchGroup]
 
-    /// How long the golem needs to rest: away from a group's apps, its
-    /// used time flows back evenly and is zero after this long.
-    public var breakMinutes: Int
-
     /// What you have to do to get more time. Shared by all groups.
     public var pleaRules: PleaRules
 
-    public init(isWatching: Bool, groups: [WatchGroup], breakMinutes: Int, pleaRules: PleaRules) {
+    public init(isWatching: Bool, groups: [WatchGroup], pleaRules: PleaRules) {
         self.isWatching = isWatching
         self.groups = groups
-        self.breakMinutes = breakMinutes
         self.pleaRules = pleaRules
     }
 
@@ -31,7 +26,6 @@ public struct GolemSettings: Codable, Equatable, Sendable {
             WatchGroup(name: "Reels", limitMinutes: 5),   // Instagram, TikTok, YouTube Shorts…
             WatchGroup(name: "Feeds", limitMinutes: 10),  // X, Bluesky, Threads…
         ],
-        breakMinutes: 10,
         pleaRules: .default
     )
 

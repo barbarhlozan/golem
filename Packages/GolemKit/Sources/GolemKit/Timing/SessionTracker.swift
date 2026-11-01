@@ -20,7 +20,7 @@ public struct SessionTracker: Sendable {
         }
 
         var session = sessions[groupID] ?? GroupSession()
-        session.appOpened(at: now, breakMinutes: store.settings.breakMinutes)
+        session.appOpened(at: now)
         sessions[groupID] = session
 
         store.sessions = sessions
@@ -68,12 +68,12 @@ public struct SessionTracker: Sendable {
     /// The group's session as it should be seen now (rested since you left).
     public func session(for groupID: UUID, at now: Date) -> GroupSession {
         (store.sessions[groupID] ?? GroupSession())
-            .rested(breakMinutes: store.settings.breakMinutes, at: now)
+            .rested(at: now)
     }
 
-    /// How long until the group's golem is fully rested, if he's resting.
-    public func restLeft(for groupID: UUID, at now: Date) -> TimeInterval? {
-        store.sessions[groupID]?.restLeft(breakMinutes: store.settings.breakMinutes, at: now)
+    /// Whether the group's golem is resting (time flowing back) right now.
+    public func isResting(_ groupID: UUID, at now: Date) -> Bool {
+        session(for: groupID, at: now).isResting
     }
 
     /// Groups that have used up their time and need a plea,

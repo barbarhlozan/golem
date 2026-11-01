@@ -10,19 +10,19 @@ private func t(_ seconds: TimeInterval) -> Date {
 struct GroupSessionTests {
     @Test func countsOnlyTimeInsideTheApps() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(60))
-        // Away for half the break: half of the minute flows back.
-        session.appOpened(at: t(360), breakMinutes: 10)
+        // 30 s away gives 30 s back; then 30 s more in the app.
+        session.appOpened(at: t(90))
 
-        #expect(session.elapsed(at: t(390)) == 60)
+        #expect(session.elapsed(at: t(120)) == 60)
     }
 
     @Test func switchingAppsInsideAGroupIsOneVisit() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         // Instagram → TikTok: "opened" arrives just before "closed".
-        session.appOpened(at: t(100), breakMinutes: 10)
+        session.appOpened(at: t(100))
         let didStop = session.appClosed(at: t(101))
 
         #expect(!didStop)
@@ -32,7 +32,7 @@ struct GroupSessionTests {
 
     @Test func aQuickOpenAndCloseStillStops() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
 
         let didStop = session.appClosed(at: t(1))
 
@@ -42,8 +42,8 @@ struct GroupSessionTests {
 
     @Test func stopIgnoresTheSwitchGrace() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
-        session.appOpened(at: t(100), breakMinutes: 10)
+        session.appOpened(at: t(0))
+        session.appOpened(at: t(100))
 
         // A "closed" now would count as part of a switch; a stop doesn't.
         let didStop = session.stop(at: t(101))
@@ -55,85 +55,85 @@ struct GroupSessionTests {
         #expect(session.elapsed(at: t(500)) == 101)
     }
 
-    @Test func aLongBreakStartsFromZero() {
+    @Test func stayingAwayAsLongAsYouWereInStartsFromZero() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(300))
-        session.appOpened(at: t(300 + 10 * 60), breakMinutes: 10)
+        session.appOpened(at: t(600))
 
-        #expect(session.elapsed(at: t(300 + 10 * 60 + 5)) == 5)
+        #expect(session.elapsed(at: t(605)) == 5)
     }
 
     @Test func aShortBreakGivesSomeTimeBack() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(300))
-        // Half of a 10-minute break: half of the 5 minutes flows back.
-        session.appOpened(at: t(300 + 5 * 60), breakMinutes: 10)
+        // 2 of the 5 minutes come back.
+        session.appOpened(at: t(420))
 
-        #expect(session.elapsed(at: t(300 + 5 * 60)) == 150)
+        #expect(session.elapsed(at: t(420)) == 180)
     }
 
-    @Test func timeFlowsBackEvenlyWhileAway() {
+    @Test func everySecondAwayGivesASecondBack() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(600))
 
-        #expect(session.rested(breakMinutes: 10, at: t(600)).elapsed(at: t(600)) == 600)
-        #expect(session.rested(breakMinutes: 10, at: t(750)).elapsed(at: t(750)) == 450)
-        #expect(session.rested(breakMinutes: 10, at: t(1200)).elapsed(at: t(1200)) == 0)
+        #expect(session.rested(at: t(600)).elapsed(at: t(600)) == 600)
+        #expect(session.rested(at: t(750)).elapsed(at: t(750)) == 450)
+        #expect(session.rested(at: t(1200)).elapsed(at: t(1200)) == 0)
     }
 
     @Test func aStoredRestedSessionKeepsResting() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(600))
 
-        // Stored halfway (as a plea does), then rested again later.
-        let halfway = session.rested(breakMinutes: 10, at: t(900))
-        let later = halfway.rested(breakMinutes: 10, at: t(1200))
+        // Stored halfway (as a plea does), then rested again later:
+        // the same as resting in one go.
+        let halfway = session.rested(at: t(900))
+        let later = halfway.rested(at: t(1000))
 
         #expect(halfway.elapsed(at: t(900)) == 300)
-        #expect(later.elapsed(at: t(1200)) < 300)
-        #expect(later.elapsed(at: t(1200)) > 0)
+        #expect(later.elapsed(at: t(1000)) == session.rested(at: t(1000)).elapsed(at: t(1000)))
     }
 
     @Test func restingCanBringYouBackUnderTheLimit() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(6 * 60))   // 6 min used, limit 5
 
         #expect(session.isOverLimit(limitMinutes: 5, at: t(6 * 60)))
-        #expect(!session.rested(breakMinutes: 10, at: t(6 * 60 + 2 * 60)).isOverLimit(limitMinutes: 5, at: t(8 * 60)))
+        #expect(!session.rested(at: t(6 * 60 + 2 * 60)).isOverLimit(limitMinutes: 5, at: t(8 * 60)))
     }
 
-    @Test func restLeftCountsDownTheBreak() {
+    @Test func restsOnlyWhileAwayWithTimeToGiveBack() {
         var session = GroupSession()
-        #expect(session.restLeft(breakMinutes: 10, at: t(0)) == nil)
+        #expect(!session.isResting)                     // nothing used yet
 
-        session.appOpened(at: t(0), breakMinutes: 10)
-        #expect(session.restLeft(breakMinutes: 10, at: t(60)) == nil)   // still in the app
+        session.appOpened(at: t(0))
+        #expect(!session.isResting)                     // in the app
 
         session.appClosed(at: t(120))
-        #expect(session.restLeft(breakMinutes: 10, at: t(180)) == 540)
-        #expect(session.restLeft(breakMinutes: 10, at: t(120 + 600)) == nil)
+        #expect(session.rested(at: t(180)).isResting)   // 1 of 2 min back
+        #expect(!session.rested(at: t(240)).isResting)  // fresh again
     }
 
     @Test func limitDateAccountsForTimeAlreadyUsed() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(120))
-        // Half a break later, 1 of the 2 minutes is left.
-        session.appOpened(at: t(420), breakMinutes: 10)
+        // A minute away: 1 of the 2 minutes is left.
+        session.appOpened(at: t(180))
 
         // 5 min limit, 1 min used → runs out 4 min after reopening.
-        #expect(session.limitDate(limitMinutes: 5, at: t(420)) == t(420 + 240))
-        #expect(session.startDate(at: t(420)) == t(360))
+        #expect(session.limitDate(limitMinutes: 5, at: t(180)) == t(180 + 240))
+        #expect(session.startDate(at: t(180)) == t(120))
     }
 
     @Test func pleadingGrantsMinutesFromNow() {
         var session = GroupSession()
-        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(0))
         session.appClosed(at: t(9 * 60))   // 9 min used, limit 5 → 4 over
 
         session.grant(minutes: 5, limitMinutes: 5, at: t(9 * 60))
@@ -153,9 +153,9 @@ struct SessionTrackerTests {
         tracker.appOpened(groupID: social.id, at: t(0))
         tracker.appOpened(groupID: news.id, at: t(60))
 
-        // Social rests while News runs: half a break later, half is left.
-        #expect(tracker.session(for: social.id, at: t(360)).elapsed(at: t(360)) == 30)
-        #expect(tracker.session(for: news.id, at: t(360)).isRunning)
+        // Social rests while News runs: 30 s later, 30 s of its minute is left.
+        #expect(tracker.session(for: social.id, at: t(90)).elapsed(at: t(90)) == 30)
+        #expect(tracker.session(for: news.id, at: t(90)).isRunning)
     }
 
     @Test func stopAllStopsTheRunningGroup() {
@@ -170,14 +170,12 @@ struct SessionTrackerTests {
     }
 
     @Test func mostRecentGroupOverLimitComesFirst() {
-        // A very long break, so resting barely gives any time back here.
-        store.settings.breakMinutes = 600
         let tracker = SessionTracker(store: store)
         tracker.appOpened(groupID: social.id, at: t(0))
-        tracker.appOpened(groupID: news.id, at: t(6 * 60))   // social: 6 of 5 min
+        tracker.appOpened(groupID: news.id, at: t(20 * 60))   // social: 20 of 5 min
 
-        // news: 11 of 10 min
-        let order = tracker.groupsOverLimit(at: t(17 * 60)).map(\.id)
+        // news: 11 of 10 min; social has rested 11 min: still 9 of 5
+        let order = tracker.groupsOverLimit(at: t(31 * 60)).map(\.id)
         #expect(order == [news.id, social.id])
     }
 

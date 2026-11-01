@@ -110,7 +110,7 @@ struct HomeView: View {
                     GroupCard(
                         group: group,
                         usedSeconds: model.usedSeconds(of: group),
-                        restLeft: model.restLeft(of: group),
+                        isResting: model.isResting(group),
                         isOverLimit: model.needsPlea(group)
                     )
                 }
@@ -183,11 +183,11 @@ private struct PleaCard: View {
 }
 
 /// One group: its name, how much of its limit is used, and a bar.
-/// While the golem rests, both shrink and a line says when he's fresh.
+/// While the golem rests, both shrink, a second per second.
 private struct GroupCard: View {
     let group: WatchGroup
     let usedSeconds: TimeInterval
-    let restLeft: TimeInterval?
+    let isResting: Bool
     let isOverLimit: Bool
 
     private var limitSeconds: TimeInterval { TimeInterval(group.limitMinutes * 60) }
@@ -207,8 +207,8 @@ private struct GroupCard: View {
             }
             ProgressView(value: min(usedSeconds / limitSeconds, 1))
                 .tint(isOverLimit ? .red : Theme.ink)
-            if let restLeft, usedSeconds >= 1 {
-                Text(GolemVoice.groupResting(freshIn: Self.minutesSeconds(restLeft)))
+            if isResting, usedSeconds >= 1 {
+                Text(GolemVoice.groupResting)
                     .font(.footnote.monospacedDigit())
                     .foregroundStyle(.secondary)
             }

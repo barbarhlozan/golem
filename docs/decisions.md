@@ -206,22 +206,25 @@ golem's face-to-face voice.
 The eyes can't loop an animation: a Live Activity is redrawn only when
 its data changes, with at most a short transition, not frame by frame.
 
-## 14. Resting gives time back gradually (2026-11-01)
+## 14. Resting gives time back, a second per second (2026-11-01)
 
 Before, a group's used time stayed frozen while you were away and dropped
-to zero only after the full break. Now the golem rests: the used time
-flows back evenly over the break (halfway through a 10-minute break, half
-of it is gone) and is fully reset at the end, pleaded bonus included. A
-short break is rewarded instead of ignored, and a group that went over its
-limit can come back under it by resting. The home screen's group cards
-tick every second and show "Resting · fresh in m:ss". The rule is
-`GroupSession.rested(breakMinutes:at:)`, covered by unit tests.
+to zero only after a fixed break (10 min by default). Now the golem rests:
+every second away gives a second back, so staying away as long as you were
+in makes the group fresh again (pleaded bonus included). A first version
+spread the time back over the fixed break, but then "fresh in" and the
+used time counted down at different speeds, which read as a bug; with
+one-to-one rest they're the same number. The break setting is gone. A
+group that went over its limit can come back under it by resting. The
+home screen refreshes every second and the group cards show "Resting"
+while the time flows back. The rule is `GroupSession.rested(at:)`,
+covered by unit tests.
 
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or
-  until midnight. Should it lift on its own after the break length, matching
-  the timer's break reset?
+  until midnight. Should it lift on its own once the golem has rested,
+  matching the timer's one-to-one rest?
 - In GolemLite, nothing stops you once the time is up. Should the
   automation itself open Golem's plea screen (e.g. an "If over limit → Open
   Golem" step), instead of relying on the notification?

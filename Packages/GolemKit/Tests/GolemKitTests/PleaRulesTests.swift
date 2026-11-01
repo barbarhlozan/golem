@@ -66,7 +66,7 @@ struct SharedStoreTests {
 
     @Test func roundTripsSettings() {
         var settings = GolemSettings.default
-        settings.breakMinutes = 7
+        settings.pleaRules.grantedMinutes = 7
         settings.pleaRules.waitSeconds = 60
 
         store.settings = settings

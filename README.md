@@ -14,7 +14,7 @@ steps in:
 
 Pleading isn't free. You wait out a countdown and write down why you need
 more time. Only then does the Golem give you a few more minutes. Stay away
-from a group and its time flows back; after a full break it starts from zero.
+from a group and its time flows back, a second for every second away.
 
 ## Two flavours
 
@@ -86,7 +86,7 @@ Extensions/                 Small programs iOS runs on Golem's behalf
   ShieldAction/             Screen Time: handles the shield's buttons
 Packages/GolemKit/          Code shared by the app and all extensions
   Settings/                 Groups, settings, shared storage
-  Timing/                   Group timers: open/close, breaks, pleas (unit-tested)
+  Timing/                   Group timers: open/close, resting, pleas (unit-tested)
   LiveActivity/             Starting/stopping the Dynamic Island timer
   Plea/                     Plea rules and every sentence the Golem says
   Notifications/            "Time's up" and plea notifications

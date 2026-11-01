@@ -49,14 +49,14 @@ information in two ways:
 
  You close the app → AppClosedIntent: timer pauses, Island disappears.
  Opening Golem stops every timer (no watched app can be open then).
- While you're away, used time flows back evenly; after the full break it's zero.
+ While you're away, used time flows back: a second for every second away.
 
  Tapping the timer (golem://plea/<group id>) or a notification (groupID in
  userInfo) opens the plea for that group. SessionCoordinator handles
  events one at a time, so a late "opened" can't undo a "closed".
 ```
 
-The rules for counting (switching, breaks, pleas) live in `GroupSession` and
+The rules for counting (switching, resting, pleas) live in `GroupSession` and
 are covered by unit tests.
 
 ## The blocking loop (full flavour)

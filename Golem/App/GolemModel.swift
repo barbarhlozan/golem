@@ -80,16 +80,17 @@ final class GolemModel {
         refresh()
     }
 
-    /// Time used in the group's current session (it flows back while the
-    /// golem rests; the home screen refreshes every second to show that).
+    /// Time used in the group's current session (it flows back, a second
+    /// per second, while the golem rests; the home screen refreshes every
+    /// second to show that).
     func usedSeconds(of group: WatchGroup) -> TimeInterval {
         let now = refreshedAt
         return SessionTracker(store: store).session(for: group.id, at: now).elapsed(at: now)
     }
 
-    /// How long until the group's golem is fully rested, if he's resting.
-    func restLeft(of group: WatchGroup) -> TimeInterval? {
-        SessionTracker(store: store).restLeft(for: group.id, at: refreshedAt)
+    /// Whether the group's golem is resting (its time flowing back).
+    func isResting(_ group: WatchGroup) -> Bool {
+        SessionTracker(store: store).isResting(group.id, at: refreshedAt)
     }
 
     func needsPlea(_ group: WatchGroup) -> Bool {

@@ -69,7 +69,7 @@ struct OnboardingView: View {
 
     /// One story page: its own drawing, a title and a line of text.
     private func storyPage(_ index: Int) -> some View {
-        let story = GolemVoice.storyPages(breakMinutes: model.settings.breakMinutes)[index]
+        let story = GolemVoice.storyPages()[index]
         return VStack(spacing: 16) {
             StoryDrawing(number: index + 1)
             Text(story.title)

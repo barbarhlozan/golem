@@ -5,7 +5,7 @@ import Foundation
 /// It is driven by two events, sent by Shortcuts automations:
 /// an app of the group was opened, or closed. Time between visits isn't
 /// counted. While you're away the golem rests: the used time flows back,
-/// shrinking evenly until it's gone after a full break.
+/// one second for every second away.
 public struct GroupSession: Codable, Equatable, Sendable {
     /// Time from earlier visits that already ended.
     public private(set) var countedSeconds: TimeInterval = 0
@@ -54,38 +54,34 @@ public struct GroupSession: Codable, Equatable, Sendable {
 
     /// The session as it should be seen now, after resting since you left.
     ///
-    /// Used time flows back evenly over the break: halfway through a
-    /// 10-minute break, half of it is gone; after the whole break the
-    /// session is fresh (pleaded bonus time included).
+    /// Every second away gives one second back: scroll for 4 minutes, stay
+    /// away for 4 minutes, and the session is fresh again (pleaded bonus
+    /// time included).
     ///
     /// The returned session counts its rest from `now`, so it can be stored
-    /// as is (e.g. after a plea); the rest then simply carries on from there.
-    public func rested(breakMinutes: Int, at now: Date) -> GroupSession {
+    /// as is (e.g. after a plea).
+    public func rested(at now: Date) -> GroupSession {
         guard !isRunning, let closed = lastClosedAt else { return self }
 
-        let breakSeconds = TimeInterval(breakMinutes * 60)
-        let away = max(0, now.timeIntervalSince(closed))
-        guard breakSeconds > 0, away < breakSeconds else { return GroupSession() }
+        let left = countedSeconds - max(0, now.timeIntervalSince(closed))
+        guard left > 0 else { return GroupSession() }
 
         var rested = self
-        rested.countedSeconds = countedSeconds * (1 - away / breakSeconds)
+        rested.countedSeconds = left
         rested.lastClosedAt = now
         return rested
     }
 
-    /// How long until the golem is fully rested (the session is fresh),
-    /// or nil while you're in the apps or there's nothing to rest from.
-    public func restLeft(breakMinutes: Int, at now: Date) -> TimeInterval? {
-        guard !isRunning, countedSeconds > 0, let closed = lastClosedAt else { return nil }
-        let left = TimeInterval(breakMinutes * 60) - now.timeIntervalSince(closed)
-        return left > 0 ? left : nil
+    /// True while you're away and there's still time flowing back.
+    public var isResting: Bool {
+        !isRunning && countedSeconds > 0
     }
 
     // MARK: Events
 
-    public mutating func appOpened(at now: Date, breakMinutes: Int) {
+    public mutating func appOpened(at now: Date) {
         if !isRunning {
-            self = rested(breakMinutes: breakMinutes, at: now)
+            self = rested(at: now)
             runningSince = now
         }
         lastOpenedAt = now

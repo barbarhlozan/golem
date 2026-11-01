@@ -5,9 +5,10 @@ import GolemKit
 /// Shortcuts to states that are slow to reach by hand, for the debug menu.
 /// Debug builds only.
 extension GolemModel {
-    /// Pretend the group's apps were used one second past its limit.
+    /// Pretend the group's apps were used a minute past its limit (resting
+    /// gives a second back per second, so it stays over for a minute).
     func debugPutOverLimit(_ group: WatchGroup) {
-        debugPut(group, secondsBeforeLimit: -1)
+        debugPut(group, secondsBeforeLimit: -60)
     }
 
     /// Pretend the group's apps were used until a few seconds before its
@@ -20,7 +21,7 @@ extension GolemModel {
         let now = Date.now
         let used = TimeInterval(group.limitMinutes * 60) - secondsBeforeLimit
         var session = GroupSession()
-        session.appOpened(at: now.addingTimeInterval(-used), breakMinutes: settings.breakMinutes)
+        session.appOpened(at: now.addingTimeInterval(-used))
         session.stop(at: now)
         store.sessions[group.id] = session
         refresh()
