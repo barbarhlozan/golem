@@ -67,8 +67,8 @@ The owner wanted iOS's clean look with a bit more character, in a
 hand-drawn / doodle direction. So the app stays native SwiftUI (`Form`s,
 system controls) and changes only a few things: the owner's own golem drawing
 (the icon, the plea screen, later the empty states), black ink as the tint
-instead of iOS blue, a warm off-white "paper" background, rounded system
-type for body text, and the blackletter UnifrakturMaguntia for big headings,
+instead of iOS blue, a warm off-white "paper" background, serif system
+type (New York, close to Times New Roman) for body text, and the blackletter UnifrakturMaguntia for big headings,
 a nod to the golem's old-Prague roots. The font is free (OFL), so it's
 bundled in `Golem/Resources/Fonts` with its license. It's only used large,
 because blackletter is hard to read when small. Basilea was considered but

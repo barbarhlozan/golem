@@ -19,8 +19,9 @@ enum Theme {
 
     // MARK: Type
 
-    /// Rounded system type for body text: friendly, still clearly iOS.
-    static let fontDesign: Font.Design = .rounded
+    /// Serif body text, in the spirit of Times New Roman: iOS's own serif
+    /// (New York), so nothing to bundle and it scales with Dynamic Type.
+    static let fontDesign: Font.Design = .serif
 
     /// UnifrakturMaguntia: blackletter, a nod to the golem's old-Prague roots.
     /// Bundled in `Resources/Fonts` (free OFL license, kept next to it) and
@@ -28,7 +29,7 @@ enum Theme {
     static let headingFontName = "UnifrakturMaguntia"
 
     /// The golem's own lines ("Time's up", etc.). Scales with Dynamic Type.
-    /// Use it via `.golemLine()`, which also switches off the rounded design.
+    /// Use it via `.golemLine()`, which also switches off the app-wide serif design.
     static let golemLine = Font.custom(headingFontName, size: 30, relativeTo: .title2)
 
     /// Navigation titles are drawn by UIKit, so SwiftUI fonts don't reach
@@ -46,7 +47,7 @@ enum Theme {
 }
 
 extension View {
-    /// Blackletter heading for the golem's lines. The app-wide rounded
+    /// Blackletter heading for the golem's lines. The app-wide serif
     /// design would otherwise replace the custom font with the system one.
     func golemLine() -> some View {
         font(Theme.golemLine)
