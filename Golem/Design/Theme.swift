@@ -59,6 +59,12 @@ extension View {
             .background(Theme.paper)
     }
 
+    /// A rounded card on the paper, for content outside a `Form`.
+    func golemCard() -> some View {
+        padding(16)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
     /// App-wide defaults. Apply once at the root.
     func golemStyle() -> some View {
         tint(Theme.ink)

@@ -6,6 +6,8 @@ import SwiftUI
 struct GroupEditView: View {
     @Binding var group: WatchGroup
 
+    @Environment(GolemModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
     @State private var isPickingApps = false
 
     var body: some View {
@@ -30,7 +32,23 @@ struct GroupEditView: View {
                     AppTokensList(selection: group.appSelection)
                 }
             }
+
+            Section {
+                Button("Delete group", role: .destructive) {
+                    let id = group.id
+                    dismiss()
+                    // After the screen is gone: removing the group while
+                    // this view still holds a binding to it would crash.
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(500))
+                        model.deleteGroup(id: id)
+                    }
+                }
+            } footer: {
+                Text("Also delete its two automations in Shortcuts.")
+            }
         }
+        .golemBackground()
         .navigationTitle(group.name)
         .familyActivityPicker(isPresented: $isPickingApps, selection: $group.appSelection)
     }

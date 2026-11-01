@@ -1,38 +1,55 @@
 import GolemKit
 import SwiftUI
 
-/// The main screen: groups, settings, and the way into a plea.
+/// The main screen: the golem and how he feels, your groups, and the way
+/// into a plea. Everything else (breaks, plea rules, automations, blocking)
+/// is behind the gear in `SettingsView`.
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var pleadingGroup: WatchGroup?
+    @State private var isShowingSettings = false
+    @State private var isShowingDebug = false
+    /// The debug menu asks for a plea; shown once that sheet is gone.
+    @State private var pleaAfterDebug: WatchGroup?
 
     var body: some View {
-        @Bindable var model = model
-
         NavigationStack {
-            Form {
-                if !model.groupsNeedingPlea.isEmpty {
-                    overLimitSection
+            ScrollView {
+                VStack(spacing: 16) {
+                    GolemMood(isAngry: !model.groupsNeedingPlea.isEmpty)
+                        .padding(.bottom, 8)
+
+                    ForEach(model.groupsNeedingPlea) { group in
+                        PleaCard(group: group) { pleadingGroup = group }
+                    }
+
+                    groups
                 }
-                if Capabilities.screenTime && !model.isAuthorized {
-                    authorizationSection
-                }
-                groupsSection
-                SettingsSection(settings: $model.settings)
-                setupSection
-                if Capabilities.screenTime && model.isAuthorized {
-                    watchingSection
-                }
-                #if DEBUG
-                DebugSection()
-                #endif
+                .padding()
             }
+            .background(Theme.paper)
             .navigationTitle("Golem")
-            .sheet(item: $pleadingGroup) { group in
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { toolbar }
+            .navigationDestination(isPresented: $isShowingSettings) {
+                SettingsView()
+            }
+            .fullScreenCover(item: $pleadingGroup) { group in
                 PleaView(group: group)
             }
+            #if DEBUG
+            .sheet(isPresented: $isShowingDebug, onDismiss: {
+                pleadingGroup = pleaAfterDebug
+                pleaAfterDebug = nil
+            }) {
+                DebugMenu { group in
+                    pleaAfterDebug = group
+                    isShowingDebug = false
+                }
+            }
+            #endif
             .alert(
                 "Something went wrong",
                 isPresented: Binding(
@@ -72,72 +89,131 @@ struct HomeView: View {
         }
     }
 
-    // MARK: Sections
+    // MARK: Parts
 
-    private var overLimitSection: some View {
-        Section(GolemVoice.shieldTitle) {
-            ForEach(model.groupsNeedingPlea) { group in
-                Button {
-                    pleadingGroup = group
-                } label: {
-                    LabeledContent(GolemVoice.overLimitTitle(groupName: group.name)) {
-                        Text(GolemVoice.pleadButton)
-                    }
-                }
-            }
-        }
-    }
-
-    private var authorizationSection: some View {
-        Section {
-            Text("Golem needs Screen Time access to block apps when your time is up.")
-            Button("Allow Screen Time access") {
-                Task { await model.requestPermissions() }
-            }
-        }
-    }
-
-    private var groupsSection: some View {
+    private var groups: some View {
         @Bindable var model = model
 
-        return Section {
+        return VStack(spacing: 12) {
             ForEach($model.settings.groups) { $group in
                 NavigationLink {
                     GroupEditView(group: $group)
                 } label: {
-                    LabeledContent(group.name, value: "\(group.limitMinutes) min")
+                    GroupCard(
+                        group: group,
+                        usedSeconds: model.usedSeconds(of: group),
+                        isOverLimit: model.needsPlea(group)
+                    )
                 }
+                .buttonStyle(.plain)
             }
-            .onDelete { model.deleteGroups(at: $0) }
 
-            Button("Add group") { model.addGroup() }
-        } header: {
-            Text("Groups")
-        } footer: {
-            Text("Apps in the same group share one timer, and each group has its own limit. Bundle similar apps, or make one group per app.")
+            Button {
+                model.addGroup()
+            } label: {
+                Label("New group", systemImage: "plus")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .golemCard()
+            }
+            .buttonStyle(.plain)
         }
     }
 
-    private var setupSection: some View {
-        Section {
-            NavigationLink("Set up the Shortcuts automations") {
-                SetupGuideView()
-            }
-        } footer: {
-            Text("The automations tell Golem when you open and close your apps, which starts the timer in the Dynamic Island.")
+    @ToolbarContentBuilder
+    private var toolbar: some ToolbarContent {
+        #if DEBUG
+        ToolbarItem(placement: .topBarLeading) {
+            Button("Debug", systemImage: "ladybug") { isShowingDebug = true }
+        }
+        #endif
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Settings", systemImage: "gearshape") { isShowingSettings = true }
         }
     }
+}
 
-    private var watchingSection: some View {
-        Section {
-            if model.settings.isWatching {
-                Button("Stop blocking", role: .destructive) { model.stopWatching() }
-            } else {
-                Button("Start blocking") { model.startWatching() }
-            }
-        } footer: {
-            Text("Covers a group's apps with the Golem's shield when its time is up. Changes apply the next time you start.")
+/// The golem and one line on how he feels: asleep while every group is
+/// within its limit, angry once one is over.
+private struct GolemMood: View {
+    let isAngry: Bool
+
+    var body: some View {
+        VStack(spacing: 12) {
+            GolemFigure(height: 200)
+                .overlay(alignment: .topTrailing) {
+                    if !isAngry {
+                        // Not blackletter: its "z" reads as a "3".
+                        Text("z z z")
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .offset(x: 24, y: -8)
+                    }
+                }
+            Text(isAngry ? GolemVoice.homeAngry : GolemVoice.homeAsleep)
+                .golemLine()
+                .multilineTextAlignment(.center)
+                .foregroundStyle(isAngry ? .red : Theme.ink)
         }
+    }
+}
+
+/// "Reels: he wants to sleep — Plead with the Golem", in red.
+private struct PleaCard: View {
+    let group: WatchGroup
+    let plead: () -> Void
+
+    var body: some View {
+        Button(action: plead) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(GolemVoice.overLimitTitle(groupName: group.name))
+                        .font(.headline)
+                    Text(GolemVoice.pleadButton)
+                        .font(.subheadline)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+            }
+            .foregroundStyle(.red)
+            .padding(16)
+            .background(.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// One group: its name, how much of its limit is used, and a bar.
+private struct GroupCard: View {
+    let group: WatchGroup
+    let usedSeconds: TimeInterval
+    let isOverLimit: Bool
+
+    private var limitSeconds: TimeInterval { TimeInterval(group.limitMinutes * 60) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(group.name)
+                    .font(.headline)
+                Spacer()
+                Text(usage)
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(isOverLimit ? .red : .secondary)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            ProgressView(value: min(usedSeconds / limitSeconds, 1))
+                .tint(isOverLimit ? .red : Theme.ink)
+        }
+        .golemCard()
+        .contentShape(Rectangle())
+    }
+
+    private var usage: String {
+        guard usedSeconds >= 1 else { return GolemVoice.groupRested }
+        let used = Duration.seconds(usedSeconds).formatted(.time(pattern: .minuteSecond))
+        return GolemVoice.groupUsage(used: used, limitMinutes: group.limitMinutes)
     }
 }
 

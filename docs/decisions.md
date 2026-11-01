@@ -123,6 +123,30 @@ automations per group (the owner's choice over one toggling automation).
 steps. A shared iCloud shortcut wouldn't save any steps, because each
 automation still has to be made by hand.
 
+## 11. First run, a calm home screen, and a separate debug menu (2026-11-01)
+
+The home screen used to be one long form, with settings and debug buttons
+in it. The owner wanted it to feel like a finished app with the golem in
+it. Now:
+
+- First launch shows four short pages: the golem, your groups and limits,
+  notifications, and the automations. They appear once (`hasOnboarded` in
+  UserDefaults) and share their steps with the setup guide.
+- Home shows the golem and his mood: asleep with "z z z" while every group
+  is within its limit, red and angry when one is over. Below are a red
+  "Plead" card per over-limit group and a card per group showing how much
+  of its limit is used. Breaks, plea rules, the guide and Screen Time
+  blocking moved behind the gear (`SettingsView`).
+- Debug builds have a ladybug menu (`DebugMenu`): simulate opening and
+  closing apps, put a group over its limit, show the plea, send a
+  "time's up" notification, reset the timers, replay the first run, and
+  see the raw timer values. Release builds don't have it.
+
+There is only one golem drawing, so his mood is shown by the line under him
+and the colour. Sleeping and angry drawings can replace that later. The
+home and first-run lines live in `GolemVoice+Home.swift`, apart from the
+plea's wording.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

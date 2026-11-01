@@ -10,7 +10,8 @@ import Observation
 @MainActor
 @Observable
 final class GolemModel {
-    private let store = SharedStore()
+    /// Internal, not private, for the debug menu (`GolemModel+Debug`).
+    let store = SharedStore()
 
     var settings: GolemSettings {
         didSet { store.settings = settings }
@@ -44,8 +45,13 @@ final class GolemModel {
         Capabilities.screenTime && AuthorizationCenter.shared.authorizationStatus == .approved
     }
 
+    /// When `refresh` last ran. The timers live in `SharedStore`, which
+    /// SwiftUI can't observe; reading this makes a view redraw on refresh.
+    private(set) var refreshedAt = Date.now
+
     /// Re-reads state the Shortcuts actions or extensions may have changed.
     func refresh() {
+        refreshedAt = .now
         isAuthorized = Self.screenTimeAuthorized
 
         // Most recently used first (see `SessionTracker.groupsOverLimit`).
@@ -69,9 +75,19 @@ final class GolemModel {
         settings.groups.append(WatchGroup(name: "New group", limitMinutes: 5))
     }
 
-    func deleteGroups(at offsets: IndexSet) {
-        settings.groups.remove(atOffsets: offsets)
+    func deleteGroup(id: UUID) {
+        settings.groups.removeAll { $0.id == id }
         refresh()
+    }
+
+    /// Time used in the group's current session (zero after a break).
+    func usedSeconds(of group: WatchGroup) -> TimeInterval {
+        _ = refreshedAt
+        return SessionTracker(store: store).session(for: group.id, at: .now).elapsed(at: .now)
+    }
+
+    func needsPlea(_ group: WatchGroup) -> Bool {
+        groupsNeedingPlea.contains { $0.id == group.id }
     }
 
     // MARK: Permissions
