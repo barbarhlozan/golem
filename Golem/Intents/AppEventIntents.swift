@@ -1,4 +1,5 @@
 import AppIntents
+import GolemKit
 
 // The two Shortcuts actions Golem offers. Use them in Personal Automations:
 //

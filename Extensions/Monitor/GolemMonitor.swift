@@ -18,7 +18,7 @@ final class GolemMonitor: DeviceActivityMonitor {
         else { return }
 
         Shields.raise(group, store: store)
-        GolemNotifications.scheduleTimeUp(groupName: group.name, minutes: group.limitMinutes)
+        GolemNotifications.scheduleTimeUp(groupID: group.id, groupName: group.name, minutes: group.limitMinutes)
     }
 
     /// A new day began: start the group with a clean slate.

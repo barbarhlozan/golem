@@ -36,6 +36,25 @@ public struct SessionTracker: Sendable {
         return didStop
     }
 
+    /// Stops every running group (see `GroupSession.stop`).
+    /// Returns false when nothing was running.
+    @discardableResult
+    public func stopAll(at now: Date) -> Bool {
+        var sessions = store.sessions
+        var didStop = false
+        for id in sessions.keys {
+            if sessions[id]?.stop(at: now) == true { didStop = true }
+        }
+        store.sessions = sessions
+        return didStop
+    }
+
+    /// The group whose apps are open right now, if any.
+    public func runningGroup() -> WatchGroup? {
+        let sessions = store.sessions
+        return store.settings.groups.first { sessions[$0.id]?.isRunning == true }
+    }
+
     /// A successful plea for one group.
     public func grantMoreTime(groupID: UUID, at now: Date) {
         let settings = store.settings
@@ -52,10 +71,15 @@ public struct SessionTracker: Sendable {
             .afterBreak(of: store.settings.breakMinutes, at: now)
     }
 
-    /// Groups that have used up their time and need a plea.
+    /// Groups that have used up their time and need a plea,
+    /// the one you were in most recently first.
     public func groupsOverLimit(at now: Date) -> [WatchGroup] {
-        store.settings.groups.filter { group in
+        let overLimit = store.settings.groups.filter { group in
             session(for: group.id, at: now).isOverLimit(limitMinutes: group.limitMinutes, at: now)
+        }
+        let sessions = store.sessions
+        return overLimit.sorted {
+            (sessions[$0.id]?.lastOpenedAt ?? .distantPast) > (sessions[$1.id]?.lastOpenedAt ?? .distantPast)
         }
     }
 }

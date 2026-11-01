@@ -45,20 +45,30 @@ struct HomeView: View {
         }
         .task {
             await model.requestPermissions()
-            offerPlea()
         }
-        .onChange(of: scenePhase) {
+        .onChange(of: scenePhase, initial: true) {
             guard scenePhase == .active else { return }
-            model.refresh()
-            offerPlea()
+            Task {
+                await model.appBecameActive()
+                offerPlea()
+            }
+        }
+        // A tapped notification or timer names its group.
+        .onChange(of: model.pleaRequest) {
+            guard let request = model.pleaRequest else { return }
+            offerPlea(replacing: request.groupID != nil)
         }
     }
 
-    /// Arriving from a "time's up" notification or the timer (whether Golem
-    /// was running or not): go straight to the plea.
-    private func offerPlea() {
-        if pleadingGroup == nil {
-            pleadingGroup = model.groupsNeedingPlea.first
+    /// Whenever Golem comes to the front with a group's time up (from a
+    /// notification, the timer, or just opening it): go straight to the
+    /// plea, for the group that was tapped if one was.
+    /// `replacing`: a tap named a group, which wins over the one Golem
+    /// picked itself a moment earlier when it came to the front.
+    private func offerPlea(replacing: Bool = false) {
+        guard pleadingGroup == nil || replacing else { return }
+        if let group = model.takeGroupToPlead() {
+            pleadingGroup = group
         }
     }
 

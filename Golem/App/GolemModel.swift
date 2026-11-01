@@ -23,6 +23,14 @@ final class GolemModel {
     /// Screen Time shield. Each needs a plea before more scrolling.
     private(set) var groupsNeedingPlea: [WatchGroup] = []
 
+    /// A plea someone asked for by tapping a notification or the timer.
+    /// Nil group: no group named, plead for the most recent one.
+    private(set) var pleaRequest: PleaRequest?
+
+    struct PleaRequest: Equatable {
+        let groupID: UUID?
+    }
+
     /// The last thing that went wrong, shown to the user.
     var errorMessage: String?
 
@@ -40,11 +48,20 @@ final class GolemModel {
     func refresh() {
         isAuthorized = Self.screenTimeAuthorized
 
+        // Most recently used first (see `SessionTracker.groupsOverLimit`).
         let overLimit = SessionTracker(store: store).groupsOverLimit(at: .now)
-        let shielded = store.shieldedGroupIDs
-        groupsNeedingPlea = settings.groups.filter { group in
-            shielded.contains(group.id) || overLimit.contains { $0.id == group.id }
+        let shielded = settings.groups.filter { store.shieldedGroupIDs.contains($0.id) }
+        groupsNeedingPlea = overLimit + shielded.filter { group in
+            !overLimit.contains { $0.id == group.id }
         }
+    }
+
+    /// Golem is in front, so none of the watched apps can be: stop any
+    /// timer still running. This catches "closed" events that never came,
+    /// e.g. after locking the phone inside an app.
+    func appBecameActive() async {
+        await SessionCoordinator.stopAll(reason: "Golem opened")
+        refresh()
     }
 
     // MARK: Groups
@@ -90,6 +107,20 @@ final class GolemModel {
     }
 
     // MARK: Pleading
+
+    func requestPlea(groupID: UUID?) {
+        pleaRequest = PleaRequest(groupID: groupID)
+    }
+
+    /// Which group to plead for now, if any: the requested one if its time
+    /// is really up, otherwise the group you were in most recently.
+    /// Clears the request.
+    func takeGroupToPlead() -> WatchGroup? {
+        refresh()
+        let requested = pleaRequest?.groupID
+        pleaRequest = nil
+        return groupsNeedingPlea.first { $0.id == requested } ?? groupsNeedingPlea.first
+    }
 
     /// Called when a plea succeeded: the group gets `grantedMinutes` more.
     func grantMoreTime(for group: WatchGroup) {
