@@ -1,0 +1,68 @@
+import Combine
+import GolemKit
+import SwiftUI
+
+/// Where you make your case for more time. The rules live in `PleaRules`;
+/// this screen only shows a countdown, a text field, and what's still missing.
+struct PleaView: View {
+    @Environment(GolemModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var secondsWaited = 0
+    @State private var reason = ""
+
+    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var rules: PleaRules { model.settings.pleaRules }
+
+    private var obstacles: [PleaRules.Obstacle] {
+        rules.obstacles(secondsWaited: secondsWaited, reason: reason)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(GolemVoice.pleaReasonPrompt) {
+                    TextField("Because…", text: $reason, axis: .vertical)
+                        .lineLimit(3...6)
+                }
+
+                if !obstacles.isEmpty {
+                    Section {
+                        ForEach(obstacles, id: \.self) { obstacle in
+                            Text(hint(for: obstacle))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                Section {
+                    Button(GolemVoice.grantButton(minutes: rules.grantedMinutes)) {
+                        model.grantMoreTime()
+                        dismiss()
+                    }
+                    .disabled(!obstacles.isEmpty)
+                }
+            }
+            .navigationTitle(GolemVoice.pleaTitle)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(GolemVoice.giveUpButton) { dismiss() }
+                }
+            }
+            .onReceive(ticker) { _ in
+                secondsWaited += 1
+            }
+        }
+        .interactiveDismissDisabled()
+    }
+
+    private func hint(for obstacle: PleaRules.Obstacle) -> String {
+        switch obstacle {
+        case .mustWait(let secondsLeft):
+            GolemVoice.waitHint(secondsLeft: secondsLeft)
+        case .reasonTooShort(let charactersLeft):
+            GolemVoice.reasonHint(charactersLeft: charactersLeft)
+        }
+    }
+}
