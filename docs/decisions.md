@@ -230,3 +230,12 @@ covered by unit tests.
   Golem" step), instead of relying on the notification?
 - Does restarting Screen Time monitoring really reset the count on a device?
   Verify once a paid account is available.
+- With a paid account, should the golem keep demanding an answer past the
+  limit for as long as you scroll? Now he stops after 4 pop-ups (40 s),
+  because an app may hold only 5 Live Activities, until you reopen the app.
+  Push updates from a server (paid account) could pop the Island open every
+  10 s for as long as needed.
+- The Island briefly opens wide when the timer starts while you're in
+  another app. Golem doesn't ask for that; it looks like iOS announcing a
+  Live Activity started from the background (the automation's "Notify When
+  Run" is off). Is there a way to start it straight into the slim line?
