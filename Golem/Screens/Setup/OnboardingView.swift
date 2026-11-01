@@ -91,19 +91,15 @@ struct OnboardingView: View {
                 }
             case .automations:
                 OpenShortcutsButton()
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(.golemPrimary)
                 Button(GolemVoice.finishButton) { hasOnboarded = true }
             }
         }
     }
 
     private func primary(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title).frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
+        Button(title, action: action)
+            .buttonStyle(.golemPrimary)
     }
 
     /// Only moves on if we're still on `current`, so a double tap (or two
