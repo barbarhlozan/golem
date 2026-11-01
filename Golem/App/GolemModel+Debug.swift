@@ -7,9 +7,20 @@ import GolemKit
 extension GolemModel {
     /// Pretend the group's apps were used one second past its limit.
     func debugPutOverLimit(_ group: WatchGroup) {
+        debugPut(group, secondsBeforeLimit: -1)
+    }
+
+    /// Pretend the group's apps were used until a few seconds before its
+    /// limit. Then "Open" shows the Island popping open at the limit.
+    func debugPutNearLimit(_ group: WatchGroup) {
+        debugPut(group, secondsBeforeLimit: 20)
+    }
+
+    private func debugPut(_ group: WatchGroup, secondsBeforeLimit: TimeInterval) {
         let now = Date.now
+        let used = TimeInterval(group.limitMinutes * 60) - secondsBeforeLimit
         var session = GroupSession()
-        session.appOpened(at: now.addingTimeInterval(-TimeInterval(group.limitMinutes * 60 + 1)), breakMinutes: settings.breakMinutes)
+        session.appOpened(at: now.addingTimeInterval(-used), breakMinutes: settings.breakMinutes)
         session.stop(at: now)
         store.sessions[group.id] = session
         refresh()

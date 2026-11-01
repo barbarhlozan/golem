@@ -171,6 +171,41 @@ width. The text rises over a soft black fade, not a hard edge. With Reduce
 Motion on, the screen appears without the animation. The drawing is blurry
 this large; an upscaled version can simply replace the image.
 
+## 13. The Island watches quietly, then keeps demanding an answer (2026-11-01)
+
+The owner wanted the Island to stay small while you're within your limit
+and, once you're past it, to grow and stay large, with the golem asking
+why he's kept awake. iOS has no way to keep the Island expanded: it
+expands on long-press, or for a few seconds when an update carries an
+alert. Golem's code doesn't run while you scroll, and a server push isn't
+possible on a free account. But iOS 26 lets an app book a Live Activity
+to start later, with an alert. So:
+
+- Opening an app within your limit shows the calm timer (white eyes,
+  mm:ss counting up; long-press: group, time so far and a bar to the
+  limit) and books red pop-ups for the limit.
+- At the limit iOS starts them by itself and pops the Island open: red
+  eyes, red timer, "Why are you keeping me awake?". Tapping it opens the
+  plea. Closing the app cancels whatever is still booked.
+- The owner wanted it annoying, so a pop-up comes every 10 s. iOS allows
+  5 Live Activities per app, booked ones included: the timer plus 4
+  pop-ups, so 40 s of demands. Reopening an app past the limit pops it
+  open again and books 4 more. Only the newest shows in the Island.
+- The default alert sound and buzz were too much every 10 s, so pop-ups
+  use a soft double knock (`Golem/Resources/Sounds/golem-knock.caf`).
+  iOS has no separate vibration setting for these alerts.
+
+Verified in the iOS 26.2 Simulator. The "time's up" notification is
+dropped on iOS 26+, because the pop-ups replace it; older iOS keeps it and
+the plain stale-date switch to red. The Lock Screen keeps just a one-line
+timer: you're rarely scrolling there.
+
+The plea's "Let him sleep" button became "Sorry. Sleep well.", in the
+golem's face-to-face voice.
+
+The eyes can't loop an animation: a Live Activity is redrawn only when
+its data changes, with at most a short transition, not frame by frame.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

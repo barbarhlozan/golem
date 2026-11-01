@@ -16,7 +16,7 @@ information in two ways:
 |----------------------------|-------------------|------------------------------------------------------|
 | Golem app                  | SwiftUI           | Groups, settings, pleading, setup guide              |
 | `AppOpenedIntent` / `AppClosedIntent` | AppIntents | Shortcuts actions; start/pause a group's timer |
-| `SessionCoordinator`       | —                 | On open/close: timer, Dynamic Island, notification   |
+| `SessionCoordinator`       | —                 | On open/close: timer, Dynamic Island, pop-up at limit  |
 | `GolemWidgets`             | WidgetKit         | Draws the Dynamic Island / Lock Screen timer         |
 | `GolemMonitor`             | DeviceActivity    | Screen Time: woken when a group's limit is reached   |
 | `GolemShieldConfiguration` | ManagedSettingsUI | Screen Time: texts and buttons of the shield         |
@@ -33,14 +33,16 @@ information in two ways:
         │  SessionTracker: Reels starts/continues (other groups pause)
         │  LiveTimer.show → Dynamic Island shows white eyes + mm:ss
         │  (limit set as the stale date: iOS turns it red at the limit)
-        │  "Time's up" notification scheduled for the limit
+        │  iOS 26+: red "pop-up" Live Activities are booked to start at the
+        │  limit and every 10 s after; older iOS: a "time's up" notification
         ▼
  You switch to TikTok (same group)
         │  "closed" + "opened" arrive within a moment → one visit, timer keeps going
         ▼
- Time runs out → Island turns red ("Plead with the Golem" on long-press)
-        │  + notification "Tap to plead" → Golem opens the plea screen
-        │  Reopening the app past the limit pops the Island open, red.
+ Time runs out → the Island pops open, red: "Why are you keeping me awake?"
+        │  (older iOS: it turns red, plus the notification)
+        │  Reopening the app past the limit pops it open again (and rebooks).
+        │  Tapping it → Golem opens the plea screen
         │  wait the countdown + write a reason (PleaRules)
         ▼
  Granted: the group gets `grantedMinutes` more, counted from now

@@ -33,17 +33,20 @@ public enum GolemVoice {
 
     // MARK: Live timer
 
-    /// Shown when the Island pops open because you're back past your limit.
-    public static let angryAlertTitle = "The Golem is up again"
+    // Past the limit he speaks for himself here, like on the plea screen.
 
-    public static func angryAlertBody(groupName: String) -> String {
-        "Your \(groupName) time is up. Plead with him or let him sleep."
+    public static let islandQuestion = "Why are you keeping me awake?"
+
+    /// The alert's text where there's no Dynamic Island (e.g. Apple Watch).
+    public static func islandAlertBody(groupName: String) -> String {
+        "Your \(groupName) time is up. Tap to answer."
     }
 
     // MARK: Plea screen
     //
     // Here the golem speaks for himself ("I"), because you're talking to him
-    // face to face. Everywhere else he's "he".
+    // face to face. So does the Island past the limit. Everywhere else
+    // he's "he".
 
     public static let pleaQuestion = "Why must I stay awake and guard you from the doom?"
     public static let pleaPlaceholder = "Because…"
@@ -89,5 +92,5 @@ public enum GolemVoice {
         "Keep me up \(minutes) more minutes"
     }
 
-    public static let giveUpButton = "Let him sleep"
+    public static let giveUpButton = "Sorry. Sleep well."
 }
