@@ -206,6 +206,17 @@ golem's face-to-face voice.
 The eyes can't loop an animation: a Live Activity is redrawn only when
 its data changes, with at most a short transition, not frame by frame.
 
+## 14. Resting gives time back gradually (2026-11-01)
+
+Before, a group's used time stayed frozen while you were away and dropped
+to zero only after the full break. Now the golem rests: the used time
+flows back evenly over the break (halfway through a 10-minute break, half
+of it is gone) and is fully reset at the end, pleaded bonus included. A
+short break is rewarded instead of ignored, and a group that went over its
+limit can come back under it by resting. The home screen's group cards
+tick every second and show "Resting · fresh in m:ss". The rule is
+`GroupSession.rested(breakMinutes:at:)`, covered by unit tests.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

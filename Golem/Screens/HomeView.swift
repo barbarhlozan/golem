@@ -63,6 +63,14 @@ struct HomeView: View {
         .task {
             await model.requestPermissions()
         }
+        // While the golem rests, used time flows back by the second: re-read
+        // it so the cards, the plea cards and his mood keep up.
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                model.refresh()
+            }
+        }
         .onChange(of: scenePhase, initial: true) {
             guard scenePhase == .active else { return }
             Task {
@@ -102,6 +110,7 @@ struct HomeView: View {
                     GroupCard(
                         group: group,
                         usedSeconds: model.usedSeconds(of: group),
+                        restLeft: model.restLeft(of: group),
                         isOverLimit: model.needsPlea(group)
                     )
                 }
@@ -174,9 +183,11 @@ private struct PleaCard: View {
 }
 
 /// One group: its name, how much of its limit is used, and a bar.
+/// While the golem rests, both shrink and a line says when he's fresh.
 private struct GroupCard: View {
     let group: WatchGroup
     let usedSeconds: TimeInterval
+    let restLeft: TimeInterval?
     let isOverLimit: Bool
 
     private var limitSeconds: TimeInterval { TimeInterval(group.limitMinutes * 60) }
@@ -196,6 +207,11 @@ private struct GroupCard: View {
             }
             ProgressView(value: min(usedSeconds / limitSeconds, 1))
                 .tint(isOverLimit ? .red : Theme.ink)
+            if let restLeft, usedSeconds >= 1 {
+                Text(GolemVoice.groupResting(freshIn: Self.minutesSeconds(restLeft)))
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
         }
         .golemCard()
         .contentShape(Rectangle())
@@ -203,8 +219,11 @@ private struct GroupCard: View {
 
     private var usage: String {
         guard usedSeconds >= 1 else { return GolemVoice.groupRested }
-        let used = Duration.seconds(usedSeconds).formatted(.time(pattern: .minuteSecond))
-        return GolemVoice.groupUsage(used: used, limitMinutes: group.limitMinutes)
+        return GolemVoice.groupUsage(used: Self.minutesSeconds(usedSeconds), limitMinutes: group.limitMinutes)
+    }
+
+    private static func minutesSeconds(_ seconds: TimeInterval) -> String {
+        Duration.seconds(seconds.rounded()).formatted(.time(pattern: .minuteSecond))
     }
 }
 

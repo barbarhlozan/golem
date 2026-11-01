@@ -9,8 +9,8 @@ public struct GolemSettings: Codable, Equatable, Sendable {
     /// The groups of apps, each with its own timer and limit.
     public var groups: [WatchGroup]
 
-    /// How long you must stay away from a group's apps before its
-    /// timer starts again from zero.
+    /// How long the golem needs to rest: away from a group's apps, its
+    /// used time flows back evenly and is zero after this long.
     public var breakMinutes: Int
 
     /// What you have to do to get more time. Shared by all groups.

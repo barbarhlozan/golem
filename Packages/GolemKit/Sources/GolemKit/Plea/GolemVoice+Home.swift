@@ -15,6 +15,11 @@ extension GolemVoice {
         "\(used) of \(limitMinutes) min"
     }
 
+    /// Under a group's bar while the golem rests and the time flows back.
+    public static func groupResting(freshIn: String) -> String {
+        "Resting · fresh in \(freshIn)"
+    }
+
     // MARK: First run
 
     /// The story pages at the start of the first run, in order: title and
@@ -28,7 +33,7 @@ extension GolemVoice {
             ("Put the golem back to sleep",
              "If you leave the app before your limit, the Golem goes back to sleep."),
             ("Break from the awakening",
-             "Stay out of the app for \(breakMinutes) minutes and your timer resets so you can wake the golem up again."),
+             "While you're out of the app, your time slowly flows back. Stay out for \(breakMinutes) minutes and it's fully reset, so you can wake the golem up again."),
             ("Stay too long and it gets angry",
              "When you pass your limit, the Golem will interrupt you and ask why you're still there."),
             ("Plead your case",

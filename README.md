@@ -14,7 +14,7 @@ steps in:
 
 Pleading isn't free. You wait out a countdown and write down why you need
 more time. Only then does the Golem give you a few more minutes. Stay away
-from a group long enough and its timer starts again from zero.
+from a group and its time flows back; after a full break it starts from zero.
 
 ## Two flavours
 

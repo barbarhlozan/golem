@@ -15,7 +15,7 @@ struct SettingsSection: View {
         } header: {
             Text("Breaks")
         } footer: {
-            Text("Stay away from a group's apps this long and its timer starts again from zero.")
+            Text("While you're away from a group's apps, its time flows back. After this long it's back to zero.")
         }
 
         Section("Pleading") {
