@@ -107,6 +107,9 @@ grows slowly out of the dark. Above a plain text box he asks "Why must I
 stay awake and guard you from the doom?". On the plea screen he speaks as
 "I", and stays "he" everywhere else. His replies under the box count down
 and ask for more ("I read slowly. 7s · 6 more letters").
+"Let him sleep" is the big white button at the bottom, there from the
+first moment, because letting him sleep and leaving is what Golem is for.
+"Keep me up" is a quiet outline above it, lit only once the plea is met.
 
 The waiting rule changed with it. The wait used to start when the screen
 opened, so you could sit it out. It now starts at your first letter (10 s

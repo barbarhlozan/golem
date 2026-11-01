@@ -44,7 +44,6 @@ struct PleaView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                giveUpButton
                 Spacer()
                 writingArea
             }
@@ -58,16 +57,6 @@ struct PleaView: View {
                 startedWritingAt = .now
             }
         }
-    }
-
-    private var giveUpButton: some View {
-        HStack {
-            Button(GolemVoice.giveUpButton) { dismiss() }
-                .foregroundStyle(.white.opacity(0.8))
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
     }
 
     private var writingArea: some View {
@@ -101,6 +90,10 @@ struct PleaView: View {
                 grantButton
             }
             .rising(isTextShown, extraDelay: 0.15)
+
+            // Always there from the first moment: letting him sleep is the
+            // whole point, so it's the big, easy button under your thumb.
+            sleepButton
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 16)
@@ -119,6 +112,19 @@ struct PleaView: View {
         }
     }
 
+    private var sleepButton: some View {
+        Button { dismiss() } label: {
+            Text(GolemVoice.giveUpButton)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .foregroundStyle(.black)
+                .background(.white, in: .capsule)
+        }
+    }
+
+    /// Quieter than letting him sleep: an outline that only lights up once
+    /// he's read enough.
     private var grantButton: some View {
         let isReady = obstacles.isEmpty
         return Button {
@@ -126,11 +132,10 @@ struct PleaView: View {
             dismiss()
         } label: {
             Text(GolemVoice.grantButton(minutes: rules.grantedMinutes))
-                .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .foregroundStyle(isReady ? .black : .white.opacity(0.4))
-                .background(isReady ? .white : .white.opacity(0.12), in: .capsule)
+                .padding(.vertical, 12)
+                .foregroundStyle(.white.opacity(isReady ? 0.9 : 0.3))
+                .overlay(Capsule().stroke(.white.opacity(isReady ? 0.6 : 0.15)))
         }
         .disabled(!isReady)
     }
