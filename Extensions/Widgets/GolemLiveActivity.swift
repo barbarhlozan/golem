@@ -29,7 +29,9 @@ struct GolemLiveActivity: Widget {
                         .font(.headline.monospacedDigit())
                 }
             } compactLeading: {
+                // Inset so both eyes clear the Island's rounded end.
                 GolemEye(state: context.state)
+                    .padding(.leading, 6)
             } compactTrailing: {
                 TimerText(state: context.state)
                     .font(.system(size: 15, weight: .semibold).monospacedDigit())
@@ -40,24 +42,27 @@ struct GolemLiveActivity: Widget {
     }
 }
 
-/// The golem's eye. Uses the "GolemEye" image from this extension's asset
+/// The golem's eyes. Uses the "GolemEye" image from this extension's asset
 /// catalog when it's there, otherwise the SF Symbol `eye.fill`.
+/// White on the black Island; pass `.primary` where the background is light.
 private struct GolemEye: View {
     let state: GolemActivityAttributes.ContentState
+    var color: Color = .white
 
     var body: some View {
         icon
-            .foregroundStyle(state.isOverLimit ? .red : .orange)
+            .foregroundStyle(state.isOverLimit ? .red : color)
     }
 
     @ViewBuilder
     private var icon: some View {
         if let custom = UIImage(named: "GolemEye") {
+            // The drawing is two eyes side by side, so the frame is wide.
             Image(uiImage: custom)
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 20, height: 20)
+                .frame(width: 24, height: 16)
         } else {
             Image(systemName: "eye.fill")
         }
@@ -71,6 +76,8 @@ private struct GolemEye: View {
 private struct TimerText: View {
     let state: GolemActivityAttributes.ContentState
     var width: CGFloat = 46
+    /// White on the black Island; pass `.primary` where the background is light.
+    var color: Color = .white
 
     var body: some View {
         timer
@@ -85,7 +92,7 @@ private struct TimerText: View {
                 .foregroundStyle(.red)
         } else {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
-                .foregroundStyle(.orange)
+                .foregroundStyle(color)
         }
     }
 }
@@ -115,11 +122,11 @@ private struct LockScreenTimer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                GolemEye(state: state)
+                GolemEye(state: state, color: .primary)
                 Text(groupName)
                     .font(.headline)
                 Spacer()
-                TimerText(state: state, width: 80)
+                TimerText(state: state, width: 80, color: .primary)
                     .font(.title2.monospacedDigit())
             }
             TimerProgress(state: state)
