@@ -30,8 +30,6 @@ struct DebugSection: View {
         } footer: {
             Text("Acts like the automations. Swipe home after Open to see the timer.")
         }
-
-        HeadingFontSection()
     }
 }
 #endif
