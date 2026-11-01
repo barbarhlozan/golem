@@ -25,6 +25,7 @@ enum Theme {
     /// Navigation titles are drawn by UIKit, so SwiftUI fonts don't reach
     /// them. Called at launch and when the heading font changes (bars that
     /// are already on screen keep the old font until the app restarts).
+    @MainActor
     static func styleNavigationBars(with heading: HeadingFont = .current) {
         let appearance = UINavigationBar.appearance()
         if let large = UIFont(name: heading.fontName, size: 34) {
