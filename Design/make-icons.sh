@@ -1,6 +1,6 @@
 #!/bin/zsh
-# Regenerates the app icon and the in-app golem from the hand drawing.
-# Run from the repo root after changing Design/golem.png:
+# Regenerates the app icon and the in-app golems from the hand drawings.
+# Run from the repo root after changing Design/golem.png or golem-asleep.png:
 #
 #   zsh Design/make-icons.sh
 #
@@ -31,5 +31,10 @@ magick -size 1024x1024 xc:white $tmp/icon.png -composite -alpha off -strip $icon
 magick $tmp/icon.png -strip $icons/AppIcon-Dark.png
 magick $tmp/icon.png -colorspace gray -strip $icons/AppIcon-Tinted.png
 
+# The sleeping golem (eyes closed), cut out the same way.
+magick Design/golem-asleep.png -alpha off -bordercolor white -border 20 -fuzz 25% \
+  -fill none -draw "color 0,0 floodfill" -shave 20x20 -trim +repage -strip \
+  $assets/GolemAsleep.imageset/golem-asleep.png
+
 rm -rf $tmp
-echo "Icons and golem image updated."
+echo "Icons and golem images updated."
