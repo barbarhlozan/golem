@@ -45,15 +45,20 @@ struct HomeView: View {
         }
         .task {
             await model.requestPermissions()
+            offerPlea()
         }
         .onChange(of: scenePhase) {
             guard scenePhase == .active else { return }
             model.refresh()
-            // Arriving from a "time's up" notification or the timer:
-            // go straight to the plea.
-            if pleadingGroup == nil {
-                pleadingGroup = model.groupsNeedingPlea.first
-            }
+            offerPlea()
+        }
+    }
+
+    /// Arriving from a "time's up" notification or the timer (whether Golem
+    /// was running or not): go straight to the plea.
+    private func offerPlea() {
+        if pleadingGroup == nil {
+            pleadingGroup = model.groupsNeedingPlea.first
         }
     }
 
