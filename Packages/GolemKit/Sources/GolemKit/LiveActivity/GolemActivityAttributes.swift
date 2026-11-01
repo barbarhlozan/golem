@@ -22,9 +22,12 @@ public struct GolemActivityAttributes: ActivityAttributes {
         }
     }
 
+    /// Which group it is, so tapping the timer opens that group's plea.
+    public var groupID: UUID
     public var groupName: String
 
-    public init(groupName: String) {
+    public init(groupID: UUID, groupName: String) {
+        self.groupID = groupID
         self.groupName = groupName
     }
 }

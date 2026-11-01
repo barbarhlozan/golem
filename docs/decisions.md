@@ -99,6 +99,54 @@ reopen a group's app past its limit, which runs Golem's code via the
 automation. The "time's up" notification stays for now, so the owner can
 see how it feels; it may be removed.
 
+## 10. Reliable timer: serial events, exact-group plea, locking (2026-11-01)
+
+On the owner's iPhone the timer kept running after locking the phone inside
+a watched app. iOS has no "phone locked" automation trigger. Locking doesn't
+fire "Is Closed", and unlocking back into the app fires no "Is Opened".
+GolemLite only runs code when an automation fires, so it can't notice
+either. A Stop button on the Lock Screen timer was tried and removed: after
+unlocking you were back in Instagram with no timer, which is worse. Now
+locked time counts until you leave the app, and the guide says to go to the
+Home Screen first. Golem stops every timer whenever it comes to the front,
+because no watched app can be open then. Real screen-on time needs Screen
+Time (the full flavour).
+
+`SessionCoordinator` (now in GolemKit) handles events one after another.
+Before, a quick open-and-close could finish the "closed" first, and the late
+"opened" put the Island and a "time's up" notification back for a stopped
+timer. Tapping a notification or the timer opens the plea for that exact
+group (a `groupID` in the notification, `golem://plea/<id>` from the timer).
+Otherwise Golem pleads for the group used most recently. Setup stays at two
+automations per group (the owner's choice over one toggling automation).
+`GolemShortcuts` lists Golem's actions in Shortcuts, and the guide is four
+steps. A shared iCloud shortcut wouldn't save any steps, because each
+automation still has to be made by hand.
+
+## 11. First run, a calm home screen, and a separate debug menu (2026-11-01)
+
+The home screen used to be one long form, with settings and debug buttons
+in it. The owner wanted it to feel like a finished app with the golem in
+it. Now:
+
+- First launch shows four short pages: the golem, your groups and limits,
+  notifications, and the automations. They appear once (`hasOnboarded` in
+  UserDefaults) and share their steps with the setup guide.
+- Home shows the golem and his mood: asleep with "z z z" while every group
+  is within its limit, red and angry when one is over. Below are a red
+  "Plead" card per over-limit group and a card per group showing how much
+  of its limit is used. Breaks, plea rules, the guide and Screen Time
+  blocking moved behind the gear (`SettingsView`).
+- Debug builds have a ladybug menu (`DebugMenu`): simulate opening and
+  closing apps, put a group over its limit, show the plea, send a
+  "time's up" notification, reset the timers, replay the first run, and
+  see the raw timer values. Release builds don't have it.
+
+There is only one golem drawing, so his mood is shown by the line under him
+and the colour. Sleeping and angry drawings can replace that later. The
+home and first-run lines live in `GolemVoice+Home.swift`, apart from the
+plea's wording.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

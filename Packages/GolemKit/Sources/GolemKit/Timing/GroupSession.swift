@@ -79,8 +79,16 @@ public struct GroupSession: Codable, Equatable, Sendable {
         if let opened = lastOpenedAt, opened > start, now.timeIntervalSince(opened) < Self.switchGrace {
             return false
         }
+        return stop(at: now)
+    }
 
-        countedSeconds += now.timeIntervalSince(start)
+    /// Stops the timer no matter what, e.g. when Golem itself comes to the
+    /// front (no watched app can be open then).
+    /// Returns false when it wasn't running.
+    @discardableResult
+    public mutating func stop(at now: Date) -> Bool {
+        guard let start = runningSince else { return false }
+        countedSeconds += max(0, now.timeIntervalSince(start))
         runningSince = nil
         lastClosedAt = now
         return true

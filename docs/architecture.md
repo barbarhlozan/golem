@@ -46,7 +46,12 @@ information in two ways:
  Granted: the group gets `grantedMinutes` more, counted from now
 
  You close the app → AppClosedIntent: timer pauses, Island disappears.
+ Opening Golem stops every timer (no watched app can be open then).
  Away longer than the break length → next visit starts from zero.
+
+ Tapping the timer (golem://plea/<group id>) or a notification (groupID in
+ userInfo) opens the plea for that group. SessionCoordinator handles
+ events one at a time, so a late "opened" can't undo a "closed".
 ```
 
 The rules for counting (switching, breaks, pleas) live in `GroupSession` and
@@ -86,8 +91,9 @@ fine because the Shortcuts actions run in the app's own process.
   two per group. The in-app guide walks through it.
 - **No blocking without Screen Time.** GolemLite only times and nags. It
   can't stop you from scrolling past the limit.
-- **Island flicker on switch.** Switching apps inside a group may briefly
-  hide and re-show the timer.
+- **Locking isn't leaving.** iOS has no lock trigger and doesn't fire
+  "Is Closed" on lock, and unlocking back into the app fires no
+  "Is Opened". So locked time counts until you leave the app or open Golem.
 - **Screen Time counts minutes, not seconds**, and its "in a row" is
   approximated by restarting a group's count after each plea.
 - **No Screen Time in the Simulator.** There `Capabilities.screenTime` is

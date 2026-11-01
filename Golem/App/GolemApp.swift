@@ -1,8 +1,11 @@
+import GolemKit
 import SwiftUI
 
 @main
 struct GolemApp: App {
+    @UIApplicationDelegateAdaptor private var notifications: NotificationHandler
     @State private var model = GolemModel()
+    @AppStorage(OnboardingView.doneKey) private var hasOnboarded = false
 
     init() {
         Theme.styleNavigationBars()
@@ -10,9 +13,24 @@ struct GolemApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            Group {
+                if hasOnboarded {
+                    HomeView()
+                } else {
+                    OnboardingView()
+                }
+            }
                 .environment(model)
                 .golemStyle()
+                .onAppear {
+                    notifications.onPleaRequest = { model.requestPlea(groupID: $0) }
+                }
+                // golem://plea/<id> from the Dynamic Island / Lock Screen timer.
+                .onOpenURL { url in
+                    if let groupID = DeepLink.pleaGroupID(from: url) {
+                        model.requestPlea(groupID: groupID)
+                    }
+                }
         }
     }
 }

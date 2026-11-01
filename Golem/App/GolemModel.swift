@@ -10,7 +10,8 @@ import Observation
 @MainActor
 @Observable
 final class GolemModel {
-    private let store = SharedStore()
+    /// Internal, not private, for the debug menu (`GolemModel+Debug`).
+    let store = SharedStore()
 
     var settings: GolemSettings {
         didSet { store.settings = settings }
@@ -22,6 +23,14 @@ final class GolemModel {
     /// Groups whose time is up, either by the Shortcuts timer or the
     /// Screen Time shield. Each needs a plea before more scrolling.
     private(set) var groupsNeedingPlea: [WatchGroup] = []
+
+    /// A plea someone asked for by tapping a notification or the timer.
+    /// Nil group: no group named, plead for the most recent one.
+    private(set) var pleaRequest: PleaRequest?
+
+    struct PleaRequest: Equatable {
+        let groupID: UUID?
+    }
 
     /// The last thing that went wrong, shown to the user.
     var errorMessage: String?
@@ -36,15 +45,28 @@ final class GolemModel {
         Capabilities.screenTime && AuthorizationCenter.shared.authorizationStatus == .approved
     }
 
+    /// When `refresh` last ran. The timers live in `SharedStore`, which
+    /// SwiftUI can't observe; reading this makes a view redraw on refresh.
+    private(set) var refreshedAt = Date.now
+
     /// Re-reads state the Shortcuts actions or extensions may have changed.
     func refresh() {
+        refreshedAt = .now
         isAuthorized = Self.screenTimeAuthorized
 
+        // Most recently used first (see `SessionTracker.groupsOverLimit`).
         let overLimit = SessionTracker(store: store).groupsOverLimit(at: .now)
-        let shielded = store.shieldedGroupIDs
-        groupsNeedingPlea = settings.groups.filter { group in
-            shielded.contains(group.id) || overLimit.contains { $0.id == group.id }
+        let shielded = settings.groups.filter { store.shieldedGroupIDs.contains($0.id) }
+        groupsNeedingPlea = overLimit + shielded.filter { group in
+            !overLimit.contains { $0.id == group.id }
         }
+    }
+
+    /// Golem is in front, so none of the watched apps can be: stop any
+    /// timer still running. This catches "closed" events that never came.
+    func appBecameActive() async {
+        await SessionCoordinator.stopAll(reason: "Golem opened")
+        refresh()
     }
 
     // MARK: Groups
@@ -53,9 +75,19 @@ final class GolemModel {
         settings.groups.append(WatchGroup(name: "New group", limitMinutes: 5))
     }
 
-    func deleteGroups(at offsets: IndexSet) {
-        settings.groups.remove(atOffsets: offsets)
+    func deleteGroup(id: UUID) {
+        settings.groups.removeAll { $0.id == id }
         refresh()
+    }
+
+    /// Time used in the group's current session (zero after a break).
+    func usedSeconds(of group: WatchGroup) -> TimeInterval {
+        _ = refreshedAt
+        return SessionTracker(store: store).session(for: group.id, at: .now).elapsed(at: .now)
+    }
+
+    func needsPlea(_ group: WatchGroup) -> Bool {
+        groupsNeedingPlea.contains { $0.id == group.id }
     }
 
     // MARK: Permissions
@@ -90,6 +122,20 @@ final class GolemModel {
     }
 
     // MARK: Pleading
+
+    func requestPlea(groupID: UUID?) {
+        pleaRequest = PleaRequest(groupID: groupID)
+    }
+
+    /// Which group to plead for now, if any: the requested one if its time
+    /// is really up, otherwise the group you were in most recently.
+    /// Clears the request.
+    func takeGroupToPlead() -> WatchGroup? {
+        refresh()
+        let requested = pleaRequest?.groupID
+        pleaRequest = nil
+        return groupsNeedingPlea.first { $0.id == requested } ?? groupsNeedingPlea.first
+    }
 
     /// Called when a plea succeeded: the group gets `grantedMinutes` more.
     func grantMoreTime(for group: WatchGroup) {

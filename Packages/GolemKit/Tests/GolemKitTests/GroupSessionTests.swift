@@ -39,6 +39,21 @@ struct GroupSessionTests {
         #expect(!session.isRunning)
     }
 
+    @Test func stopIgnoresTheSwitchGrace() {
+        var session = GroupSession()
+        session.appOpened(at: t(0), breakMinutes: 10)
+        session.appOpened(at: t(100), breakMinutes: 10)
+
+        // A "closed" now would count as part of a switch; a stop doesn't.
+        let didStop = session.stop(at: t(101))
+        let stoppedAgain = session.stop(at: t(102))
+
+        #expect(didStop)
+        #expect(!stoppedAgain)
+        #expect(!session.isRunning)
+        #expect(session.elapsed(at: t(500)) == 101)
+    }
+
     @Test func aLongBreakStartsFromZero() {
         var session = GroupSession()
         session.appOpened(at: t(0), breakMinutes: 10)
@@ -92,6 +107,28 @@ struct SessionTrackerTests {
 
         #expect(tracker.session(for: social.id, at: t(500)).elapsed(at: t(500)) == 60)
         #expect(tracker.session(for: news.id, at: t(500)).isRunning)
+    }
+
+    @Test func stopAllStopsTheRunningGroup() {
+        let tracker = SessionTracker(store: store)
+        tracker.appOpened(groupID: social.id, at: t(0))
+        #expect(tracker.runningGroup()?.id == social.id)
+
+        #expect(tracker.stopAll(at: t(60)))
+        #expect(tracker.runningGroup() == nil)
+        #expect(tracker.session(for: social.id, at: t(500)).elapsed(at: t(500)) == 60)
+        #expect(!tracker.stopAll(at: t(70)))
+    }
+
+    @Test func mostRecentGroupOverLimitComesFirst() {
+        store.settings.breakMinutes = 60
+        let tracker = SessionTracker(store: store)
+        tracker.appOpened(groupID: social.id, at: t(0))
+        tracker.appOpened(groupID: news.id, at: t(6 * 60))   // social: 6 of 5 min
+
+        // news: 11 of 10 min
+        let order = tracker.groupsOverLimit(at: t(17 * 60)).map(\.id)
+        #expect(order == [news.id, social.id])
     }
 
     @Test func reportsGroupsOverTheirLimit() {

@@ -63,6 +63,10 @@ targetTemplates:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSSupportsLiveActivities: true
         LSApplicationQueriesSchemes: [shortcuts]
+        # golem://plea/<group id>, opened by the timer and notifications (DeepLink.swift).
+        CFBundleURLTypes:
+          - CFBundleURLName: cz.hlozanek.golem
+            CFBundleURLSchemes: [golem]
         # Bundled fonts (Golem/Resources/Fonts). See Theme.swift.
         UIAppFonts: [UnifrakturMaguntia-Book.ttf]
     settings:
