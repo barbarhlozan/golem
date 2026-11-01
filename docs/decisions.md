@@ -82,9 +82,7 @@ drawing is `Design/golem.png`, and `Design/make-icons.sh` regenerates the
 icon and in-app images from it. `Design/golem-eye.png` is the Dynamic Island
 glyph, a single-colour template image.
 
-Next direction (not started): lean further into the plea as a *manuscript
-you write to the golem*, with a page-like plea screen and more of a letter
-than a form, and reword the golem's lines in `GolemVoice` to match.
+The plea screen is the one exception to the paper look; see 10.
 
 ## 9. The golem wants to sleep; the limit is drastic (2026-11-01)
 
@@ -146,6 +144,32 @@ There is only one golem drawing, so his mood is shown by the line under him
 and the colour. Sleeping and angry drawings can replace that later. The
 home and first-run lines live in `GolemVoice+Home.swift`, apart from the
 plea's wording.
+
+## 12. The plea is a face-to-face with the golem, in the dark (2026-11-01)
+
+The plea was a form on paper. Letter and manuscript versions (a ruled page
+with "Dear Golem,", margin notes, a wax seal) were mocked up, but the owner
+preferred something more direct. The plea is now a black full-screen cover.
+The golem, drawn in white (the same drawing, colour-inverted), fades in and
+grows slowly out of the dark. Above a plain text box he asks "Why must I
+stay awake and guard you from the doom?". On the plea screen he speaks as
+"I", and stays "he" everywhere else. His replies under the box count down
+and ask for more ("I read slowly. 7s · 6 more letters").
+"Let him sleep" is the big white button at the bottom, there from the
+first moment, because letting him sleep and leaving is what Golem is for.
+"Keep me up" is a quiet outline above it, lit only once the plea is met.
+
+The waiting rule changed with it. The wait used to start when the screen
+opened, so you could sit it out. It now starts at your first letter (10 s
+by default, down from 30 s), next to the 20-character minimum. That way the
+waiting is time spent explaining yourself. Settings saved on a device keep
+their old wait until changed in Settings → Pleading.
+
+The animation was tuned by the owner with sliders in a mockup. The numbers
+live in `PleaGolemIntro.Tuning`, with distances as fractions of the screen
+width. The text rises over a soft black fade, not a hard edge. With Reduce
+Motion on, the screen appears without the animation. The drawing is blurry
+this large; an upscaled version can simply replace the image.
 
 ## Open questions
 

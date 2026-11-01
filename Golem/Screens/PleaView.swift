@@ -2,82 +2,167 @@ import Combine
 import GolemKit
 import SwiftUI
 
-/// Where you make your case for more time. The rules live in `PleaRules`;
-/// this screen only shows a countdown, a text field, and what's still missing.
+/// Where you explain yourself to the golem to get more time. It's a black,
+/// full-screen face-to-face with him rather than a form: he looms out of the
+/// dark and asks why he must stay awake.
+///
+/// The rules live in `PleaRules`: his reading time only starts with your
+/// first letter, so you can't sit it out. This screen only shows his
+/// question, a text box, and his replies.
 struct PleaView: View {
     /// The group whose time is up.
     let group: WatchGroup
 
     @Environment(GolemModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var secondsWaited = 0
     @State private var reason = ""
+    @State private var startedWritingAt: Date?
+    @State private var now = Date.now
+    @State private var isRevealed = false
+    @State private var isTextShown = false
 
-    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private let ticker = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
     private var rules: PleaRules { model.settings.pleaRules }
 
+    private var secondsWriting: Int {
+        guard let startedWritingAt else { return 0 }
+        return Int(now.timeIntervalSince(startedWritingAt))
+    }
+
     private var obstacles: [PleaRules.Obstacle] {
-        rules.obstacles(secondsWaited: secondsWaited, reason: reason)
+        rules.obstacles(secondsWriting: secondsWriting, reason: reason)
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(spacing: 12) {
-                        GolemFigure()
-                        Text(GolemVoice.overLimitTitle(groupName: group.name))
-                            .golemLine()
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .listRowBackground(Color.clear)
-                }
+        ZStack(alignment: .top) {
+            Color.black.ignoresSafeArea()
 
-                Section(GolemVoice.pleaReasonPrompt) {
-                    TextField("Because…", text: $reason, axis: .vertical)
-                        .lineLimit(3...6)
-                }
+            PleaGolemIntro(isRevealed: isRevealed)
+                .ignoresSafeArea()
 
-                if !obstacles.isEmpty {
-                    Section {
-                        ForEach(obstacles, id: \.self) { obstacle in
-                            Text(hint(for: obstacle))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                Section {
-                    Button(GolemVoice.grantButton(minutes: rules.grantedMinutes)) {
-                        model.grantMoreTime(for: group)
-                        dismiss()
-                    }
-                    .disabled(!obstacles.isEmpty)
-                }
-            }
-            .golemBackground()
-            .navigationTitle(GolemVoice.pleaTitle)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(GolemVoice.giveUpButton) { dismiss() }
-                }
-            }
-            .onReceive(ticker) { _ in
-                secondsWaited += 1
+            VStack(spacing: 0) {
+                Spacer()
+                writingArea
             }
         }
-        .interactiveDismissDisabled()
+        .foregroundStyle(.white)
+        .preferredColorScheme(.dark)
+        .onAppear(perform: reveal)
+        .onReceive(ticker) { now = $0 }
+        .onChange(of: reason) {
+            if startedWritingAt == nil, !reason.isEmpty {
+                startedWritingAt = .now
+            }
+        }
     }
 
-    private func hint(for obstacle: PleaRules.Obstacle) -> String {
-        switch obstacle {
-        case .mustWait(let secondsLeft):
-            GolemVoice.waitHint(secondsLeft: secondsLeft)
-        case .reasonTooShort(let charactersLeft):
-            GolemVoice.reasonHint(charactersLeft: charactersLeft)
+    private var writingArea: some View {
+        VStack(spacing: 14) {
+            Text(GolemVoice.pleaQuestion)
+                .golemLine()
+                .multilineTextAlignment(.center)
+                .rising(isTextShown)
+
+            VStack(spacing: 14) {
+                TextField(
+                    "",
+                    text: $reason,
+                    prompt: Text(GolemVoice.pleaPlaceholder).foregroundStyle(.white.opacity(0.4)),
+                    axis: .vertical
+                )
+                .lineLimit(3...6)
+                .padding(12)
+                .background(Color(white: 0.1), in: .rect(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.2)))
+
+                Text(GolemVoice.pleaHint(
+                    obstacles: obstacles,
+                    hasStartedWriting: startedWritingAt != nil,
+                    grantedMinutes: rules.grantedMinutes
+                ))
+                .font(.subheadline.italic())
+                .foregroundStyle(.white.opacity(0.6))
+                .contentTransition(.numericText())
+
+                grantButton
+            }
+            .rising(isTextShown, extraDelay: 0.15)
+
+            // Always there from the first moment: letting him sleep is the
+            // whole point, so it's the big, easy button under your thumb.
+            sleepButton
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 16)
+        .background {
+            // Solid black under the text, fading softly into the golem above it.
+            Color.black
+                .ignoresSafeArea()
+                .overlay(alignment: .top) {
+                    GeometryReader { proxy in
+                        let height = proxy.size.width * PleaGolemIntro.Tuning.fadeHeight
+                        PleaFade()
+                            .frame(height: height)
+                            .offset(y: -height)
+                    }
+                }
+        }
+    }
+
+    private var sleepButton: some View {
+        Button { dismiss() } label: {
+            Text(GolemVoice.giveUpButton)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .foregroundStyle(.black)
+                .background(.white, in: .capsule)
+        }
+    }
+
+    /// Quieter than letting him sleep: an outline that only lights up once
+    /// he's read enough.
+    private var grantButton: some View {
+        let isReady = obstacles.isEmpty
+        return Button {
+            model.grantMoreTime(for: group)
+            dismiss()
+        } label: {
+            Text(GolemVoice.grantButton(minutes: rules.grantedMinutes))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .foregroundStyle(.white.opacity(isReady ? 0.9 : 0.3))
+                .overlay(Capsule().stroke(.white.opacity(isReady ? 0.6 : 0.15)))
+        }
+        .disabled(!isReady)
+    }
+
+    /// Plays the golem's entrance, then brings in the question and the box.
+    private func reveal() {
+        guard !reduceMotion else {
+            isRevealed = true
+            isTextShown = true
+            return
+        }
+        isRevealed = true
+        Task {
+            try? await Task.sleep(for: .seconds(PleaGolemIntro.Tuning.textDelaySeconds))
+            isTextShown = true
+        }
+    }
+}
+
+private extension View {
+    /// Fades and slides the view up into place once `isShown` turns true.
+    func rising(_ isShown: Bool, extraDelay: Double = 0) -> some View {
+        opacity(isShown ? 1 : 0)
+            .offset(y: isShown ? 0 : 14)
+            .animation(
+                .easeOut(duration: PleaGolemIntro.Tuning.textRiseSeconds).delay(extraDelay),
+                value: isShown
+            )
     }
 }

@@ -5,7 +5,9 @@ import Foundation
 /// To change how pleading works, start here: the plea screen only asks
 /// these rules what is still missing.
 public struct PleaRules: Codable, Equatable, Sendable {
-    /// How long you have to sit and wait before you may plead.
+    /// How long the golem takes to read, counted from your first letter.
+    /// The wait starts when you start writing, not when the screen opens,
+    /// so you can't just sit it out: you have to be explaining yourself.
     public var waitSeconds: Int
 
     /// How many characters your reason has to have.
@@ -21,7 +23,7 @@ public struct PleaRules: Codable, Equatable, Sendable {
     }
 
     public static let `default` = PleaRules(
-        waitSeconds: 30,
+        waitSeconds: 10,
         minimumReasonLength: 20,
         grantedMinutes: 5
     )
@@ -33,10 +35,11 @@ public struct PleaRules: Codable, Equatable, Sendable {
     }
 
     /// Lists every unmet requirement. An empty list means the plea is granted.
-    public func obstacles(secondsWaited: Int, reason: String) -> [Obstacle] {
+    /// `secondsWriting` counts from the first letter typed (0 before that).
+    public func obstacles(secondsWriting: Int, reason: String) -> [Obstacle] {
         var obstacles: [Obstacle] = []
 
-        let secondsLeft = waitSeconds - secondsWaited
+        let secondsLeft = waitSeconds - secondsWriting
         if secondsLeft > 0 {
             obstacles.append(.mustWait(secondsLeft: secondsLeft))
         }
@@ -50,7 +53,7 @@ public struct PleaRules: Codable, Equatable, Sendable {
         return obstacles
     }
 
-    public func isGranted(secondsWaited: Int, reason: String) -> Bool {
-        obstacles(secondsWaited: secondsWaited, reason: reason).isEmpty
+    public func isGranted(secondsWriting: Int, reason: String) -> Bool {
+        obstacles(secondsWriting: secondsWriting, reason: reason).isEmpty
     }
 }

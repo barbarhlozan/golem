@@ -20,10 +20,10 @@ struct SettingsSection: View {
 
         Section("Pleading") {
             Stepper(
-                "Wait \(settings.pleaRules.waitSeconds) s",
+                "Reads for \(settings.pleaRules.waitSeconds) s",
                 value: $settings.pleaRules.waitSeconds,
                 in: 0...300,
-                step: 10
+                step: 5
             )
             Stepper(
                 "Reason of \(settings.pleaRules.minimumReasonLength)+ characters",
