@@ -39,7 +39,7 @@ information in two ways:
  You switch to TikTok (same group)
         │  "closed" + "opened" arrive within a moment → one visit, timer keeps going
         ▼
- Time runs out → the Island pops open, red: "Why am I kept awake so long?"
+ Time runs out → the Island pops open, red: "Why are you keeping me awake?"
         │  (older iOS: it turns red, plus the notification)
         │  Reopening the app past the limit pops it open again.
         │  Tapping it → Golem opens the plea screen

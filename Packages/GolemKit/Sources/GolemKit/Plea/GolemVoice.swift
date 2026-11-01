@@ -35,7 +35,7 @@ public enum GolemVoice {
 
     // Past the limit he speaks for himself here, like on the plea screen.
 
-    public static let islandQuestion = "Why am I kept awake so long?"
+    public static let islandQuestion = "Why are you keeping me awake?"
     public static let islandPrompt = "Just tell me."
 
     /// The alert's text where there's no Dynamic Island (e.g. Apple Watch).
