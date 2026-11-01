@@ -33,12 +33,12 @@ struct SharedStoreTests {
 
     @Test func returnsDefaultsWhenEmpty() {
         #expect(store.settings == .default)
-        #expect(store.isShieldUp == false)
+        #expect(store.sessions.isEmpty)
     }
 
     @Test func roundTripsSettings() {
         var settings = GolemSettings.default
-        settings.limitMinutes = 7
+        settings.breakMinutes = 7
         settings.pleaRules.waitSeconds = 60
 
         store.settings = settings

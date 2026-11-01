@@ -5,6 +5,9 @@ import SwiftUI
 /// Where you make your case for more time. The rules live in `PleaRules`;
 /// this screen only shows a countdown, a text field, and what's still missing.
 struct PleaView: View {
+    /// The group whose time is up.
+    let group: WatchGroup
+
     @Environment(GolemModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
@@ -22,6 +25,11 @@ struct PleaView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Text(GolemVoice.overLimitTitle(groupName: group.name))
+                        .font(.headline)
+                }
+
                 Section(GolemVoice.pleaReasonPrompt) {
                     TextField("Because…", text: $reason, axis: .vertical)
                         .lineLimit(3...6)
@@ -38,7 +46,7 @@ struct PleaView: View {
 
                 Section {
                     Button(GolemVoice.grantButton(minutes: rules.grantedMinutes)) {
-                        model.grantMoreTime()
+                        model.grantMoreTime(for: group)
                         dismiss()
                     }
                     .disabled(!obstacles.isEmpty)

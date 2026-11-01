@@ -1,38 +1,37 @@
-import FamilyControls
 import GolemKit
 import SwiftUI
 
-/// The main (and for now only) screen: setup, status and the way into a plea.
+/// The main screen: groups, settings, and the way into a plea.
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var isPickingApps = false
-    @State private var isPleading = false
+    @State private var pleadingGroup: WatchGroup?
 
     var body: some View {
         @Bindable var model = model
 
         NavigationStack {
             Form {
-                if !model.isAuthorized {
-                    authorizationSection
-                } else {
-                    if model.isShieldUp {
-                        shieldSection
-                    }
-                    appsSection
-                    SettingsSection(settings: $model.settings)
-                    watchingSection
-                    if GolemModel.isPreviewMode {
-                        previewSection
-                    }
+                if !model.groupsNeedingPlea.isEmpty {
+                    overLimitSection
                 }
+                if Capabilities.screenTime && !model.isAuthorized {
+                    authorizationSection
+                }
+                groupsSection
+                SettingsSection(settings: $model.settings)
+                setupSection
+                if Capabilities.screenTime && model.isAuthorized {
+                    watchingSection
+                }
+                #if DEBUG
+                DebugSection()
+                #endif
             }
             .navigationTitle("Golem")
-            .familyActivityPicker(isPresented: $isPickingApps, selection: $model.watchedApps)
-            .sheet(isPresented: $isPleading) {
-                PleaView()
+            .sheet(item: $pleadingGroup) { group in
+                PleaView(group: group)
             }
             .alert(
                 "Something went wrong",
@@ -44,81 +43,85 @@ struct HomeView: View {
                 message: { Text(model.errorMessage ?? "") }
             )
         }
+        .task {
+            await model.requestPermissions()
+        }
         .onChange(of: scenePhase) {
-            if scenePhase == .active { model.refresh() }
+            guard scenePhase == .active else { return }
+            model.refresh()
+            // Arriving from a "time's up" notification or the timer:
+            // go straight to the plea.
+            if pleadingGroup == nil {
+                pleadingGroup = model.groupsNeedingPlea.first
+            }
         }
     }
 
     // MARK: Sections
 
+    private var overLimitSection: some View {
+        Section(GolemVoice.shieldTitle) {
+            ForEach(model.groupsNeedingPlea) { group in
+                Button {
+                    pleadingGroup = group
+                } label: {
+                    LabeledContent(GolemVoice.overLimitTitle(groupName: group.name)) {
+                        Text(GolemVoice.pleadButton)
+                    }
+                }
+            }
+        }
+    }
+
     private var authorizationSection: some View {
         Section {
-            Text("Golem needs Screen Time access to notice when you start doomscrolling.")
+            Text("Golem needs Screen Time access to block apps when your time is up.")
             Button("Allow Screen Time access") {
-                Task { await model.requestAuthorization() }
+                Task { await model.requestPermissions() }
             }
         }
     }
 
-    private var shieldSection: some View {
+    private var groupsSection: some View {
+        @Bindable var model = model
+
+        return Section {
+            ForEach($model.settings.groups) { $group in
+                NavigationLink {
+                    GroupEditView(group: $group)
+                } label: {
+                    LabeledContent(group.name, value: "\(group.limitMinutes) min")
+                }
+            }
+            .onDelete { model.deleteGroups(at: $0) }
+
+            Button("Add group") { model.addGroup() }
+        } header: {
+            Text("Groups")
+        } footer: {
+            Text("Apps in the same group share one timer. Each group has its own limit.")
+        }
+    }
+
+    private var setupSection: some View {
         Section {
-            Label(GolemVoice.shieldTitle, systemImage: "eye.fill")
-                .font(.headline)
-            Button(GolemVoice.pleadButton) { isPleading = true }
-        }
-    }
-
-    private var appsSection: some View {
-        Section("Watched apps") {
-            Button(model.watchedApps.isEmpty ? "Choose apps…" : "Change apps…") {
-                isPickingApps = true
+            NavigationLink("Set up the Shortcuts automations") {
+                SetupGuideView()
             }
-            if !model.watchedApps.isEmpty {
-                WatchedAppsSummary(selection: model.watchedApps)
-            }
+        } footer: {
+            Text("The automations tell Golem when you open and close your apps, which starts the timer in the Dynamic Island.")
         }
     }
 
     private var watchingSection: some View {
         Section {
             if model.settings.isWatching {
-                Button("Stop watching", role: .destructive) { model.stopWatching() }
+                Button("Stop blocking", role: .destructive) { model.stopWatching() }
             } else {
-                Button("Start watching") { model.startWatching() }
-                    .disabled(model.watchedApps.isEmpty && !GolemModel.isPreviewMode)
+                Button("Start blocking") { model.startWatching() }
             }
         } footer: {
-            if model.settings.isWatching {
-                Text("Changes to the limit apply the next time you start watching.")
-            }
-        }
-    }
-
-    private var previewSection: some View {
-        Section {
-            Button("Simulate limit reached") { model.simulateLimitReached() }
-                .disabled(!model.settings.isWatching || model.isShieldUp)
-        } header: {
-            Text("Preview mode")
-        } footer: {
-            Text("The simulator has no Screen Time, so app picking, monitoring and the real shield only work on an iPhone. Use this to try the plea flow.")
-        }
-    }
-}
-
-/// Shows the icons of the picked apps. iOS only lets us draw them via `Label(token)`.
-private struct WatchedAppsSummary: View {
-    let selection: FamilyActivitySelection
-
-    var body: some View {
-        ForEach(Array(selection.applicationTokens), id: \.self) { token in
-            Label(token)
-        }
-        ForEach(Array(selection.categoryTokens), id: \.self) { token in
-            Label(token)
-        }
-        ForEach(Array(selection.webDomainTokens), id: \.self) { token in
-            Label(token)
+            Text("Covers a group's apps with the Golem's shield when its time is up. Changes apply the next time you start.")
         }
     }
 }

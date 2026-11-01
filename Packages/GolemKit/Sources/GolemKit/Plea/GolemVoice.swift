@@ -7,8 +7,9 @@ public enum GolemVoice {
 
     public static let shieldTitle = "The Golem is watching"
 
-    public static func shieldSubtitle(appName: String?, minutes: Int) -> String {
+    public static func shieldSubtitle(appName: String?, minutes: Int?) -> String {
         let app = appName ?? "this"
+        guard let minutes else { return "You've been on \(app) long enough. Is it worth it?" }
         return "You've been on \(app) for \(minutes) min. Is it worth it?"
     }
 
@@ -19,17 +20,29 @@ public enum GolemVoice {
 
     public static let limitReachedTitle = "Time's up"
 
-    public static func limitReachedBody(minutes: Int) -> String {
-        "You've been scrolling for \(minutes) min. The Golem has stepped in."
+    public static func limitReachedBody(groupName: String, minutes: Int) -> String {
+        "You've spent \(minutes) min on \(groupName). Tap to plead with the Golem."
     }
 
     public static let pleaNotificationTitle = "The Golem will hear you"
     public static let pleaNotificationBody = "Tap to make your case."
 
+    // MARK: Live timer
+
+    public static let timeUpLabel = "Time's up"
+
+    public static func limitLabel(minutes: Int) -> String {
+        "of \(minutes) min"
+    }
+
     // MARK: Plea screen
 
     public static let pleaTitle = "Plead with the Golem"
     public static let pleaReasonPrompt = "Why do you need more time?"
+
+    public static func overLimitTitle(groupName: String) -> String {
+        "\(groupName): time's up"
+    }
 
     public static func waitHint(secondsLeft: Int) -> String {
         "The Golem is thinking… \(secondsLeft)s"

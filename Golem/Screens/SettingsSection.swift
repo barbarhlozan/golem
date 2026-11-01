@@ -1,17 +1,21 @@
 import GolemKit
 import SwiftUI
 
-/// The limit and the plea rules, as editable form rows.
+/// The break length and the plea rules, as editable form rows.
 struct SettingsSection: View {
     @Binding var settings: GolemSettings
 
     var body: some View {
-        Section("Limit") {
+        Section {
             Stepper(
-                "Step in after \(settings.limitMinutes) min",
-                value: $settings.limitMinutes,
-                in: GolemSettings.allowedLimitMinutes
+                "Reset after a \(settings.breakMinutes) min break",
+                value: $settings.breakMinutes,
+                in: 1...120
             )
+        } header: {
+            Text("Breaks")
+        } footer: {
+            Text("Stay away from a group's apps this long and its timer starts again from zero.")
         }
 
         Section("Pleading") {

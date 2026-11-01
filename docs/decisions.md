@@ -31,11 +31,42 @@ A successful plea needs a countdown wait **and** a written reason. Each plea
 grants a fixed number of minutes. All of it is configurable in `PleaRules`.
 Escalating cost (each plea in a row gets harder) is a possible next step.
 
+## 5. Hybrid: Shortcuts for timing, Screen Time for blocking (2026-11-01)
+
+Revisits decision 1. The owner wanted a live timer in the Dynamic Island
+that appears when you open a watched app. Only the app itself, a server push,
+or a Shortcuts action can start a Live Activity, and Screen Time never says
+when an app opens. So the "app opened / closed" Shortcuts automations now
+drive an exact timer and the Island, and Screen Time stays for the shield.
+An always-on Live Activity fed by Screen Time minute events was considered.
+It would occupy the Island all day, can't know which group is in front, and
+couldn't be verified without a paid account, so it wasn't built.
+
+## 6. Groups with their own timer and limit (2026-11-01)
+
+Apps are sorted into groups (e.g. Social, News). Apps in one group share a
+timer: Instagram → TikTok → Instagram is one session. Each group has its own
+limit, and the plea rules are shared. Only one group runs at a time. A group's
+timer resets after a break (default 10 min, adjustable). "Closed" and
+"opened" during a switch arrive within a moment of each other, in either
+order. A "closed" within 3 s of a second "opened" is ignored.
+
+## 7. Two flavours: Golem and GolemLite (2026-11-01)
+
+A free Apple account can't sign the Family Controls capability, which blocks
+every Screen Time target. `GolemLite` is the same app without Screen Time
+(no extensions, no entitlements), so it runs on the owner's iPhone and in the
+Simulator today. Both flavours share sources and the bundle ID. The
+`SCREEN_TIME` compile flag plus `Capabilities.screenTime` switch the
+Screen Time parts on.
+
 ## Open questions
 
-- After **Close app**, the shield stays up until you plead or until midnight.
-  Should it lift on its own after a break (for example 15 minutes) instead,
-  so "in a row" really means in a row?
-- Should each app get its own limit, instead of one shared counter?
-- Does restarting monitoring really reset the count on device? Verify once a
-  paid account is available.
+- After **Close app** on the shield, the shield stays up until you plead or
+  until midnight. Should it lift on its own after the break length, matching
+  the timer's break reset?
+- In GolemLite, nothing stops you once the time is up. Should the
+  automation itself open Golem's plea screen (e.g. an "If over limit → Open
+  Golem" step), instead of relying on the notification?
+- Does restarting Screen Time monitoring really reset the count on a device?
+  Verify once a paid account is available.

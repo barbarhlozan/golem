@@ -1,11 +1,21 @@
 # Golem — Xcode project definition.
 #
 # This file is the source of truth for the Xcode project. The generated
-# Golem.xcodeproj is NOT committed; after editing this file run:
+# Golem.xcodeproj (and everything in Generated/) is NOT committed; after
+# editing this file run:
 #
 #   xcodegen
 #
 # Docs: https://github.com/yonaskolb/XcodeGen/blob/master/Docs/ProjectSpec.md
+#
+# The app comes in two flavours that share all their code:
+#
+#   Golem      Screen Time shields + Shortcuts timer + Dynamic Island.
+#              Needs a paid Apple Developer account and a real iPhone.
+#   GolemLite  Shortcuts timer + Dynamic Island, no Screen Time.
+#              Works with a free account and in the Simulator.
+#
+# Both use the same bundle ID, so only one can be installed at a time.
 
 name: Golem
 
@@ -18,49 +28,83 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.0"
+    MARKETING_VERSION: "0.2.0"
     CURRENT_PROJECT_VERSION: "1"
-    # Set this to your Apple Developer team ID (Xcode > Settings > Accounts).
-    DEVELOPMENT_TEAM: ""
+    # Your Apple Developer team ID (Xcode > Settings > Accounts).
+    DEVELOPMENT_TEAM: 7HPU664L66
     CODE_SIGN_STYLE: Automatic
 
 packages:
   GolemKit:
     path: Packages/GolemKit
 
-# Shared by every target. The App Group lets the app and its extensions
-# read the same settings. Keep the ID in sync with `AppGroup.id` in GolemKit.
-entitlementsCommon: &entitlements
+# Entitlements for the Screen Time parts. The App Group lets the app and its
+# extensions read the same settings; keep it in sync with
+# `SharedContainer.id` in GolemKit.
+screenTimeEntitlements: &screenTimeEntitlements
   com.apple.developer.family-controls: true
   com.apple.security.application-groups:
     - group.cz.hlozanek.golem
 
-targets:
-  # The app you open: pick apps, set limits, plead with the Golem.
-  Golem:
+# What both app flavours have in common.
+targetTemplates:
+  GolemApp:
     type: application
     platform: iOS
     sources: [Golem]
     dependencies:
       - package: GolemKit
-      - target: GolemMonitor
-      - target: GolemShieldConfiguration
-      - target: GolemShieldAction
+      - target: GolemWidgets
     info:
-      path: Golem/Info.plist
+      path: Generated/${target_name}/Info.plist
       properties:
         CFBundleDisplayName: Golem
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-    entitlements:
-      path: Golem/Golem.entitlements
-      properties: *entitlements
+        NSSupportsLiveActivities: true
+        LSApplicationQueriesSchemes: [shortcuts]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
-  # Runs in the background; iOS wakes it when a usage limit is reached.
+targets:
+  # The full app: everything, including Screen Time shields.
+  Golem:
+    templates: [GolemApp]
+    dependencies:
+      - target: GolemMonitor
+      - target: GolemShieldConfiguration
+      - target: GolemShieldAction
+    entitlements:
+      path: Generated/Golem/Golem.entitlements
+      properties: *screenTimeEntitlements
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) SCREEN_TIME
+
+  # The app without Screen Time, for free accounts and the Simulator.
+  GolemLite:
+    templates: [GolemApp]
+
+  # Draws the timer in the Dynamic Island and on the Lock Screen.
+  GolemWidgets:
+    type: app-extension
+    platform: iOS
+    sources: [Extensions/Widgets]
+    dependencies:
+      - package: GolemKit
+    info:
+      path: Generated/GolemWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Golem Timer
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem.widgets
+
+  # Runs in the background; iOS wakes it when a group's limit is reached.
   GolemMonitor:
     type: app-extension
     platform: iOS
@@ -68,15 +112,15 @@ targets:
     dependencies:
       - package: GolemKit
     info:
-      path: Extensions/Monitor/Info.plist
+      path: Generated/GolemMonitor/Info.plist
       properties:
         CFBundleDisplayName: Golem Monitor
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).GolemMonitor
     entitlements:
-      path: Extensions/Monitor/GolemMonitor.entitlements
-      properties: *entitlements
+      path: Generated/GolemMonitor/GolemMonitor.entitlements
+      properties: *screenTimeEntitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem.monitor
@@ -89,15 +133,15 @@ targets:
     dependencies:
       - package: GolemKit
     info:
-      path: Extensions/ShieldConfiguration/Info.plist
+      path: Generated/GolemShieldConfiguration/Info.plist
       properties:
         CFBundleDisplayName: Golem Shield
         NSExtension:
           NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).GolemShieldConfiguration
     entitlements:
-      path: Extensions/ShieldConfiguration/GolemShieldConfiguration.entitlements
-      properties: *entitlements
+      path: Generated/GolemShieldConfiguration/GolemShieldConfiguration.entitlements
+      properties: *screenTimeEntitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem.shield-configuration
@@ -110,15 +154,15 @@ targets:
     dependencies:
       - package: GolemKit
     info:
-      path: Extensions/ShieldAction/Info.plist
+      path: Generated/GolemShieldAction/Info.plist
       properties:
         CFBundleDisplayName: Golem Shield Action
         NSExtension:
           NSExtensionPointIdentifier: com.apple.ManagedSettings.shield-action-service
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).GolemShieldAction
     entitlements:
-      path: Extensions/ShieldAction/GolemShieldAction.entitlements
-      properties: *entitlements
+      path: Generated/GolemShieldAction/GolemShieldAction.entitlements
+      properties: *screenTimeEntitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem.shield-action
@@ -128,6 +172,13 @@ schemes:
     build:
       targets:
         Golem: all
+    test:
+      targets:
+        - package: GolemKit/GolemKitTests
+  GolemLite:
+    build:
+      targets:
+        GolemLite: all
     test:
       targets:
         - package: GolemKit/GolemKitTests

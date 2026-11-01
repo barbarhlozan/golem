@@ -1,26 +1,27 @@
 import Foundation
 
-/// The App Group shared by the app and its extensions.
+/// The App Group container shared by the app and its extensions.
 /// Must match `com.apple.security.application-groups` in project.yml.
-public enum AppGroup {
+public enum SharedContainer {
     public static let id = "group.cz.hlozanek.golem"
 }
 
 /// Small key-value storage that the app and all extensions can read and write.
 ///
 /// Extensions run in separate processes, so this (App Group UserDefaults)
-/// is how they talk to each other.
+/// is how they talk to each other. GolemLite has no App Group; there the
+/// same storage simply stays inside the app, which is all it needs.
 public struct SharedStore: Sendable {
     private enum Key {
         static let settings = "settings"
-        static let appSelection = "appSelection"
-        static let isShieldUp = "isShieldUp"
+        static let sessions = "sessions"
+        static let shieldedGroupIDs = "shieldedGroupIDs"
     }
 
     private let suiteName: String
 
     /// Pass a different suite name in tests to stay isolated.
-    public init(suiteName: String = AppGroup.id) {
+    public init(suiteName: String = SharedContainer.id) {
         self.suiteName = suiteName
     }
 
@@ -30,27 +31,35 @@ public struct SharedStore: Sendable {
 
     public var settings: GolemSettings {
         get {
-            guard let data = defaults.data(forKey: Key.settings),
-                  let settings = try? JSONDecoder().decode(GolemSettings.self, from: data)
-            else { return .default }
-            return settings
+            if let settings = decoded(GolemSettings.self, forKey: Key.settings) {
+                return settings
+            }
+            // Save the defaults on first use, so the default groups keep
+            // the same IDs everywhere (Shortcuts automations refer to them).
+            encode(GolemSettings.default, forKey: Key.settings)
+            return .default
         }
-        nonmutating set {
-            defaults.set(try? JSONEncoder().encode(newValue), forKey: Key.settings)
-        }
+        nonmutating set { encode(newValue, forKey: Key.settings) }
     }
 
-    /// The apps the user picked, as encoded `FamilyActivitySelection` data.
-    /// Kept as raw data so this file doesn't depend on Screen Time.
-    public var appSelectionData: Data? {
-        get { defaults.data(forKey: Key.appSelection) }
-        nonmutating set { defaults.set(newValue, forKey: Key.appSelection) }
+    /// The running or paused timer of each group, by group ID.
+    public var sessions: [UUID: GroupSession] {
+        get { decoded([UUID: GroupSession].self, forKey: Key.sessions) ?? [:] }
+        nonmutating set { encode(newValue, forKey: Key.sessions) }
     }
 
-    /// True while the shield covers the watched apps (the limit was reached
-    /// and nobody has successfully pleaded yet).
-    public var isShieldUp: Bool {
-        get { defaults.bool(forKey: Key.isShieldUp) }
-        nonmutating set { defaults.set(newValue, forKey: Key.isShieldUp) }
+    /// Groups whose apps are currently covered by the Screen Time shield.
+    public var shieldedGroupIDs: Set<UUID> {
+        get { decoded(Set<UUID>.self, forKey: Key.shieldedGroupIDs) ?? [] }
+        nonmutating set { encode(newValue, forKey: Key.shieldedGroupIDs) }
+    }
+
+    private func decoded<T: Decodable>(_ type: T.Type, forKey key: String) -> T? {
+        guard let data = defaults.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(type, from: data)
+    }
+
+    private func encode(_ value: some Encodable, forKey key: String) {
+        defaults.set(try? JSONEncoder().encode(value), forKey: key)
     }
 }
