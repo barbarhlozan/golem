@@ -29,7 +29,7 @@ struct PleaView: View {
                     VStack(spacing: 12) {
                         GolemFigure()
                         Text(GolemVoice.overLimitTitle(groupName: group.name))
-                            .font(Theme.golemLine)
+                            .golemLine()
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)

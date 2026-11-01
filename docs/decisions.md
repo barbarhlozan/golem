@@ -66,11 +66,12 @@ The owner wanted iOS's clean look with a bit more character, in a
 hand-drawn / doodle direction. So the app stays native SwiftUI (`Form`s,
 system controls) and changes only a few things: the owner's own golem drawing
 (the icon, the plea screen, later the empty states), black ink as the tint
-instead of iOS blue, a warm off-white "paper" background, and Optima for
-headings. The owner suggested Basilea and "Augustinian". Basilea is
-commercial and would need an app-embedding license, and no font named
-Augustinian was found. Optima has a similar flared, calligraphic feel and
-ships with iOS. Body text stays the system font. The icon is plain white, like the drawing on paper. The dark and tinted
+instead of iOS blue, a warm off-white "paper" background, rounded system
+type for body text, and the blackletter UnifrakturMaguntia for big headings,
+a nod to the golem's old-Prague roots. The font is free (OFL), so it's
+bundled in `Golem/Resources/Fonts` with its license. It's only used large,
+because blackletter is hard to read when small. Basilea was considered but
+needs a paid embedding license. Optima was tried and felt too formal. The icon is plain white, like the drawing on paper. The dark and tinted
 icon variants have a transparent background, so iOS draws its own backdrop.
 Everything lives in `Golem/Design/Theme.swift` and the asset catalog colors
 `Ink`, `Paper` and `Card`, so screens never use raw colors. The source

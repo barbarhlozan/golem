@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Golem's look in one place: ink on warm paper, Optima headings, the
+/// Golem's look in one place: ink on warm paper, blackletter headings, the
 /// hand-drawn golem. Screens use these names instead of raw colors and fonts,
 /// so the style can change here without touching every screen.
 ///
@@ -19,13 +19,17 @@ enum Theme {
 
     // MARK: Type
 
-    /// Optima ships with iOS: flared and a little calligraphic, close in
-    /// spirit to Basilea, with nothing to bundle or license. Body text stays
-    /// the system font, so the app still reads like iOS.
-    private static let headingFontName = "Optima-Bold"
+    /// Blackletter, a nod to the golem's old-Prague roots. It's bundled in
+    /// `Resources/Fonts` (free OFL license, kept next to it) and only used
+    /// for big headings, because blackletter is hard to read when small.
+    private static let headingFontName = "UnifrakturMaguntia"
+
+    /// Rounded system type for everything else: friendly, still clearly iOS.
+    static let fontDesign: Font.Design = .rounded
 
     /// The golem's own lines ("Time's up", etc.). Scales with Dynamic Type.
-    static let golemLine = Font.custom(headingFontName, size: 24, relativeTo: .title2)
+    /// Use it via `.golemLine()`, which also switches off the rounded design.
+    static let golemLine = Font.custom(headingFontName, size: 30, relativeTo: .title2)
 
     /// Navigation titles are drawn by UIKit, so SwiftUI fonts don't reach
     /// them. Call once at launch.
@@ -34,7 +38,7 @@ enum Theme {
         if let large = UIFont(name: headingFontName, size: 34) {
             appearance.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
         }
-        if let inline = UIFont(name: headingFontName, size: 17) {
+        if let inline = UIFont(name: headingFontName, size: 20) {
             appearance.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline)]
         }
     }
@@ -47,8 +51,16 @@ extension View {
             .background(Theme.paper)
     }
 
+    /// Blackletter heading for the golem's lines. The app-wide rounded
+    /// design would otherwise replace the custom font with the system one.
+    func golemLine() -> some View {
+        font(Theme.golemLine)
+            .fontDesign(nil)
+    }
+
     /// App-wide defaults. Apply once at the root.
     func golemStyle() -> some View {
         tint(Theme.ink)
+            .fontDesign(Theme.fontDesign)
     }
 }
