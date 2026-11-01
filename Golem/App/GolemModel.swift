@@ -24,6 +24,11 @@ final class GolemModel {
     /// Screen Time shield. Each needs a plea before more scrolling.
     private(set) var groupsNeedingPlea: [WatchGroup] = []
 
+    /// Whether the golem is awake on the home screen. Only a Screen Time
+    /// shield keeps him up: otherwise you've left the apps (you're in Golem)
+    /// and he's asleep, resting, even if a group is still over its limit.
+    private(set) var isGolemAwake = false
+
     /// A plea someone asked for by tapping a notification or the timer.
     /// Nil group: no group named, plead for the most recent one.
     private(set) var pleaRequest: PleaRequest?
@@ -60,6 +65,7 @@ final class GolemModel {
         groupsNeedingPlea = overLimit + shielded.filter { group in
             !overLimit.contains { $0.id == group.id }
         }
+        isGolemAwake = !shielded.isEmpty
     }
 
     /// Golem is in front, so none of the watched apps can be: stop any
@@ -134,14 +140,19 @@ final class GolemModel {
         pleaRequest = PleaRequest(groupID: groupID)
     }
 
-    /// Which group to plead for now, if any: the requested one if its time
-    /// is really up, otherwise the group you were in most recently.
-    /// Clears the request.
+    /// Which group to plead for now, if any. After a tap on the timer or a
+    /// notification: the tapped group if its time is really up, otherwise
+    /// the group you were in most recently. Without a tap, only a group you
+    /// left past its limit just now: after "Sorry. Sleep well." he stays
+    /// asleep when you come back. Clears the request.
     func takeGroupToPlead() -> WatchGroup? {
         refresh()
-        let requested = pleaRequest?.groupID
+        guard let request = pleaRequest else {
+            let justLeft = SessionTracker(store: store).groupsJustLeftOverLimit(at: .now)
+            return groupsNeedingPlea.first { group in justLeft.contains { $0.id == group.id } }
+        }
         pleaRequest = nil
-        return groupsNeedingPlea.first { $0.id == requested } ?? groupsNeedingPlea.first
+        return groupsNeedingPlea.first { $0.id == request.groupID } ?? groupsNeedingPlea.first
     }
 
     /// Called when a plea succeeded: the group gets `grantedMinutes` more.

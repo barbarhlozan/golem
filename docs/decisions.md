@@ -220,6 +220,19 @@ home screen refreshes every second and the group cards show "Resting"
 while the time flows back. The rule is `GroupSession.rested(at:)`,
 covered by unit tests.
 
+## 15. In Golem, he's asleep, even past the limit (2026-11-01)
+
+After "Sorry. Sleep well." the home screen said he was awake and angry,
+and every return to Golem opened the plea again. But you've left the apps,
+so he's resting, and the time is flowing back.
+
+- The home screen shows him asleep. Only a Screen Time shield (full build)
+  keeps him awake there.
+- A group still past its limit gets a calm card, "Explain why you want to
+  keep watching Reels". Tapping it wakes him for a plea.
+- Opening Golem goes straight to the plea only when you've just left a
+  group past its limit (within 10 s), or tapped the timer or a notification.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

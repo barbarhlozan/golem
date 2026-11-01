@@ -169,6 +169,27 @@ struct SessionTrackerTests {
         #expect(!tracker.stopAll(at: t(70)))
     }
 
+    @Test func asksRightAfterYouLeavePastTheLimit() {
+        let tracker = SessionTracker(store: store)
+        let limit = TimeInterval(social.limitMinutes * 60)
+        tracker.appOpened(groupID: social.id, at: t(0))
+        tracker.stopAll(at: t(limit + 30))
+
+        #expect(tracker.groupsJustLeftOverLimit(at: t(limit + 32)).map(\.id) == [social.id])
+    }
+
+    /// After "Sorry. Sleep well." he's resting; coming back to Golem
+    /// later shouldn't wake him for another plea.
+    @Test func letsHimSleepLater() {
+        let tracker = SessionTracker(store: store)
+        let limit = TimeInterval(social.limitMinutes * 60)
+        tracker.appOpened(groupID: social.id, at: t(0))
+        tracker.stopAll(at: t(limit + 30))
+
+        #expect(tracker.groupsOverLimit(at: t(limit + 50)).map(\.id) == [social.id])
+        #expect(tracker.groupsJustLeftOverLimit(at: t(limit + 50)).isEmpty)
+    }
+
     @Test func mostRecentGroupOverLimitComesFirst() {
         let tracker = SessionTracker(store: store)
         tracker.appOpened(groupID: social.id, at: t(0))
