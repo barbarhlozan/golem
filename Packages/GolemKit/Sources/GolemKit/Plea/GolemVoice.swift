@@ -92,5 +92,5 @@ public enum GolemVoice {
         "Keep me up \(minutes) more minutes"
     }
 
-    public static let giveUpButton = "Let him sleep"
+    public static let giveUpButton = "Sorry. Sleep well."
 }

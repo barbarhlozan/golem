@@ -200,6 +200,9 @@ dropped on iOS 26+, because the pop-ups replace it; older iOS keeps it and
 the plain stale-date switch to red. The Lock Screen keeps just a one-line
 timer: you're rarely scrolling there.
 
+The plea's "Let him sleep" button became "Sorry. Sleep well.", in the
+golem's face-to-face voice.
+
 The eyes can't loop an animation: a Live Activity is redrawn only when
 its data changes, with at most a short transition, not frame by frame.
 
