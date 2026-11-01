@@ -10,8 +10,8 @@ import WidgetKit
 /// eyes on the left, timer on the right.
 ///
 /// Within the limit the golem is only watching: white eyes, and a
-/// long-press shows the group, the time left and a bar filling up to the
-/// limit. Past it he's awake and angry: red eyes, a red timer counting on,
+/// long-press shows the group, the time so far and a bar filling up to
+/// the limit. Past it he's awake and angry: red eyes, a red timer counting on,
 /// and, expanded, his question in place of the bar. `LiveTimer` makes the
 /// Island pop open at that moment.
 ///
@@ -42,12 +42,8 @@ struct GolemLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    if angry {
-                        TimerText(state: context.state, isAngry: true, width: 64)
-                            .font(.headline.monospacedDigit())
-                    } else {
-                        TimeLeft(state: context.state)
-                    }
+                    TimerText(state: context.state, isAngry: angry, width: 64)
+                        .font(.headline.monospacedDigit())
                 }
                 // The slots beside the camera are narrow, so the bar and the
                 // golem's question go in the space below.
@@ -136,24 +132,6 @@ private struct TimerText: View {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
                 .foregroundStyle(calmColor)
         }
-    }
-}
-
-/// "3:12 left": the time until the limit, counting down.
-private struct TimeLeft: View {
-    let state: GolemActivityAttributes.ContentState
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Text(timerInterval: state.startedAt...state.limitAt, countsDown: true)
-                .font(.headline.monospacedDigit())
-                .multilineTextAlignment(.trailing)
-                .frame(width: 52, alignment: .trailing)
-            Text(GolemVoice.islandTimeLeft)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.6))
-        }
-        .foregroundStyle(.white)
     }
 }
 

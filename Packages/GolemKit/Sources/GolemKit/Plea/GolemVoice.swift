@@ -43,8 +43,6 @@ public enum GolemVoice {
         "Your \(groupName) time is up. Just tell me."
     }
 
-    public static let islandTimeLeft = "left"
-
     // MARK: Plea screen
     //
     // Here the golem speaks for himself ("I"), because you're talking to him

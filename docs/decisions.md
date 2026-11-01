@@ -181,7 +181,7 @@ alert. Golem's code doesn't run while you scroll, and a server push isn't
 possible on a free account. But iOS 26 lets an app book a Live Activity
 to start later, with an alert. So when you open an app within your limit,
 Golem shows the calm timer (white eyes, mm:ss; long-press: group, time
-left and a bar to the limit) and books a red one for the limit. At the
+so far and a bar to the limit) and books a red one for the limit. At the
 limit iOS starts it by itself and pops the Island open: red eyes, red
 timer, "Why are you keeping me awake?" and "Just tell me.". Closing the
 app cancels the booking. Verified in the iOS 26.2 Simulator.
