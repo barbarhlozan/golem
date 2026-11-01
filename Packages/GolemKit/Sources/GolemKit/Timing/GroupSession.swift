@@ -83,8 +83,7 @@ public struct GroupSession: Codable, Equatable, Sendable {
     }
 
     /// Stops the timer no matter what, e.g. when Golem itself comes to the
-    /// front or the timer's Stop button is tapped. Locking the phone inside
-    /// an app never fires "closed", so this is the way out of that.
+    /// front (no watched app can be open then).
     /// Returns false when it wasn't running.
     @discardableResult
     public mutating func stop(at now: Date) -> Bool {

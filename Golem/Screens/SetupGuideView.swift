@@ -31,8 +31,7 @@ struct SetupGuideView: View {
             }
 
             Section {
-                Text("Locking the phone inside an app doesn't count as closing it, so the timer keeps going. Tap **\(GolemVoice.stopTimerButton)** on the Lock Screen timer, or just open Golem.")
-                Text("Optional: add **Golem › Stop Timer** to a **Sleep** or **Focus** automation, so the timer stops at bedtime.")
+                Text("Go to the Home Screen before you lock the phone. iOS doesn't tell Golem about locking, so the timer keeps counting until you leave the app.")
             } header: {
                 Text("Good to know")
             }

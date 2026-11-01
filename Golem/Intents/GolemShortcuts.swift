@@ -17,11 +17,5 @@ struct GolemShortcuts: AppShortcutsProvider {
             shortTitle: "App Closed",
             systemImageName: "eye.slash"
         )
-        AppShortcut(
-            intent: StopTimerIntent(),
-            phrases: ["Stop \(.applicationName) timer", "Stop the \(.applicationName)"],
-            shortTitle: "Stop Timer",
-            systemImageName: "stop.circle"
-        )
     }
 }

@@ -14,9 +14,7 @@ import WidgetKit
 /// the Golem". The switch happens on its own at the limit, because the app
 /// sets the limit as the Live Activity's stale date and iOS redraws it then.
 ///
-/// Tapping it opens the plea for its group (`DeepLink`). The Lock Screen
-/// version has a Stop button, because locking the phone inside an app
-/// never tells Golem you left.
+/// Tapping it opens the plea for its group (`DeepLink`).
 struct GolemLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GolemActivityAttributes.self) { context in
@@ -167,16 +165,7 @@ private struct LockScreenTimer: View {
                 TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
                     .font(.title2.monospacedDigit())
             }
-            HStack {
-                TimerProgress(state: state, isAngry: isAngry)
-                Spacer()
-                // Runs StopTimerIntent in the app without opening it.
-                Button(intent: StopTimerIntent()) {
-                    Label(GolemVoice.stopTimerButton, systemImage: "moon.zzz.fill")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .tint(isAngry ? .red : .primary)
-            }
+            TimerProgress(state: state, isAngry: isAngry)
         }
     }
 }

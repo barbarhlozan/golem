@@ -46,9 +46,7 @@ information in two ways:
  Granted: the group gets `grantedMinutes` more, counted from now
 
  You close the app → AppClosedIntent: timer pauses, Island disappears.
- Locked the phone inside the app? No "closed" comes: tap "Let him sleep"
- on the Lock Screen timer (StopTimerIntent), or open Golem, which stops
- every timer when it comes to the front.
+ Opening Golem stops every timer (no watched app can be open then).
  Away longer than the break length → next visit starts from zero.
 
  Tapping the timer (golem://plea/<group id>) or a notification (groupID in
@@ -94,8 +92,8 @@ fine because the Shortcuts actions run in the app's own process.
 - **No blocking without Screen Time.** GolemLite only times and nags. It
   can't stop you from scrolling past the limit.
 - **Locking isn't leaving.** iOS has no lock trigger and doesn't fire
-  "Is Closed" on lock, so locked time counts until you tap Stop, open
-  Golem, or leave the app.
+  "Is Closed" on lock, and unlocking back into the app fires no
+  "Is Opened". So locked time counts until you leave the app or open Golem.
 - **Screen Time counts minutes, not seconds**, and its "in a row" is
   approximated by restarting a group's count after each plea.
 - **No Screen Time in the Simulator.** There `Capabilities.screenTime` is

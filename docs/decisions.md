@@ -99,26 +99,29 @@ reopen a group's app past its limit, which runs Golem's code via the
 automation. The "time's up" notification stays for now, so the owner can
 see how it feels; it may be removed.
 
-## 10. Reliable timer: serial events, Stop button, exact-group plea (2026-11-01)
+## 10. Reliable timer: serial events, exact-group plea, locking (2026-11-01)
 
 On the owner's iPhone the timer kept running after locking the phone inside
-a watched app. iOS has no "phone locked" automation trigger, and locking
-doesn't fire "Is Closed", so GolemLite can't notice. Three things cover it:
-the Lock Screen timer has a Stop button (`StopTimerIntent`, runs in the
-background), the same action can go in a Sleep or Focus automation, and
-Golem stops every timer whenever it comes to the front (no watched app can
-be open then). The locked time already counted stays counted.
-`SessionCoordinator` (now in GolemKit, so the widget can compile the
-intent) handles events one after another. Before, a quick open-and-close
-could finish the "closed" first, and the late "opened" put the Island and a
-"time's up" notification back for a stopped timer. Tapping a notification
-or the timer opens the plea for that exact group (a `groupID` in the
-notification, `golem://plea/<id>` from the timer). Otherwise Golem pleads
-for the group used most recently. Setup stays at two automations per group
-(the owner's choice over one toggling automation). `GolemShortcuts` lists
-Golem's actions in Shortcuts, and the guide is four steps. A shared iCloud
-shortcut wouldn't save any steps, because each automation still has to be
-made by hand.
+a watched app. iOS has no "phone locked" automation trigger. Locking doesn't
+fire "Is Closed", and unlocking back into the app fires no "Is Opened".
+GolemLite only runs code when an automation fires, so it can't notice
+either. A Stop button on the Lock Screen timer was tried and removed: after
+unlocking you were back in Instagram with no timer, which is worse. Now
+locked time counts until you leave the app, and the guide says to go to the
+Home Screen first. Golem stops every timer whenever it comes to the front,
+because no watched app can be open then. Real screen-on time needs Screen
+Time (the full flavour).
+
+`SessionCoordinator` (now in GolemKit) handles events one after another.
+Before, a quick open-and-close could finish the "closed" first, and the late
+"opened" put the Island and a "time's up" notification back for a stopped
+timer. Tapping a notification or the timer opens the plea for that exact
+group (a `groupID` in the notification, `golem://plea/<id>` from the timer).
+Otherwise Golem pleads for the group used most recently. Setup stays at two
+automations per group (the owner's choice over one toggling automation).
+`GolemShortcuts` lists Golem's actions in Shortcuts, and the guide is four
+steps. A shared iCloud shortcut wouldn't save any steps, because each
+automation still has to be made by hand.
 
 ## Open questions
 

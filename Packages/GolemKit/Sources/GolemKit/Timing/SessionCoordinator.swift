@@ -4,9 +4,8 @@ import OSLog
 /// What happens when an app of a group is opened or closed:
 /// update the group's timer, the Dynamic Island, and the "time's up" notification.
 ///
-/// Called by the Shortcuts actions, the timer's Stop button, the app when it
-/// comes to the front, and the debug buttons. It lives in GolemKit so the
-/// widget extension can compile the Stop button's intent too.
+/// Called by the Shortcuts actions, the app when it comes to the front,
+/// and the debug buttons.
 ///
 /// Events are handled strictly one after another. Shortcuts can deliver
 /// "opened" and "closed" a moment apart, and when they overlapped, a late
@@ -50,9 +49,9 @@ public enum SessionCoordinator {
         }
     }
 
-    /// Stops whatever is running. Used when Golem itself is in front
-    /// (so no watched app can be) and by the timer's Stop button, because
-    /// locking the phone inside an app never sends "closed".
+    /// Stops whatever is running. Used when Golem itself is in front,
+    /// so no watched app can be. It also catches "closed" events that
+    /// never came.
     public static func stopAll(reason: String, at now: Date = .now) async {
         await serially {
             let didStop = SessionTracker().stopAll(at: now)

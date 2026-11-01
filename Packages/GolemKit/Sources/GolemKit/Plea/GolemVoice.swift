@@ -63,10 +63,3 @@ public enum GolemVoice {
 
     public static let giveUpButton = "Let him sleep"
 }
-
-// Added by the flow fixes; kept apart so the wording rewrite can fold it in.
-extension GolemVoice {
-    /// The button on the Lock Screen timer. Locking the phone inside an
-    /// app doesn't stop the timer, so this lets you put him back to sleep.
-    public static let stopTimerButton = "Let him sleep"
-}

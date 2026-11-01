@@ -57,8 +57,7 @@ final class GolemModel {
     }
 
     /// Golem is in front, so none of the watched apps can be: stop any
-    /// timer still running. This catches "closed" events that never came,
-    /// e.g. after locking the phone inside an app.
+    /// timer still running. This catches "closed" events that never came.
     func appBecameActive() async {
         await SessionCoordinator.stopAll(reason: "Golem opened")
         refresh()

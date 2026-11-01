@@ -97,10 +97,7 @@ targets:
   GolemWidgets:
     type: app-extension
     platform: iOS
-    sources:
-      - Extensions/Widgets
-      # The Lock Screen timer's Stop button needs the intent type.
-      - Golem/Intents/StopTimerIntent.swift
+    sources: [Extensions/Widgets]
     dependencies:
       - package: GolemKit
     info:
