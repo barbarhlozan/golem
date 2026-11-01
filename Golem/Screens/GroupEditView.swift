@@ -11,7 +11,7 @@ struct GroupEditView: View {
     var body: some View {
         Form {
             Section("Name") {
-                TextField("e.g. Social", text: $group.name)
+                TextField("e.g. Reels", text: $group.name)
             }
 
             Section("Limit") {

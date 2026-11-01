@@ -23,11 +23,13 @@ public struct GolemSettings: Codable, Equatable, Sendable {
         self.pleaRules = pleaRules
     }
 
+    /// Two starter groups to show the idea; users rename, add and delete
+    /// groups as they like (e.g. one group per app).
     public static let `default` = GolemSettings(
         isWatching: false,
         groups: [
-            WatchGroup(name: "Social", limitMinutes: 5),
-            WatchGroup(name: "News", limitMinutes: 10),
+            WatchGroup(name: "Reels", limitMinutes: 5),   // Instagram, TikTok, YouTube Shorts…
+            WatchGroup(name: "Feeds", limitMinutes: 10),  // X, Bluesky, Threads…
         ],
         breakMinutes: 10,
         pleaRules: .default

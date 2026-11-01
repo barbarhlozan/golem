@@ -2,8 +2,8 @@ import AppIntents
 
 // The two Shortcuts actions Golem offers. Use them in Personal Automations:
 //
-//   When Instagram or TikTok is opened → Golem: App Opened (Social)
-//   When Instagram or TikTok is closed → Golem: App Closed (Social)
+//   When Instagram or TikTok is opened → Golem: App Opened (Reels)
+//   When Instagram or TikTok is closed → Golem: App Closed (Reels)
 //
 // They are Live Activity intents, which is what lets them start the
 // Dynamic Island timer while Golem itself stays in the background.

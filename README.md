@@ -1,9 +1,10 @@
 # Golem
 
 An iOS app against doomscrolling. You sort your time-eating apps into
-**groups**, e.g. *Social* (Instagram, TikTok) and *News* (Bluesky, X). When you
-open one, a timer starts in the **Dynamic Island**. Switching between apps of
-the same group keeps one timer going. When the group's time is up, the Golem
+**groups** you define yourself, e.g. *Reels* (Instagram, TikTok) and *Feeds*
+(X, Bluesky), or one group per app. When you open one, a timer starts in the
+**Dynamic Island**. Switching between apps of the same group keeps one timer
+going. When the group's time is up, the Golem
 steps in:
 
 > **The Golem is watching**
