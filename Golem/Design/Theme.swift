@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Golem's look in one place: ink on warm paper, characterful headings, the
+/// Golem's look in one place: ink on warm paper, blackletter headings, the
 /// hand-drawn golem. Screens use these names instead of raw colors and fonts,
 /// so the style can change here without touching every screen.
 ///
@@ -22,71 +22,35 @@ enum Theme {
     /// Rounded system type for body text: friendly, still clearly iOS.
     static let fontDesign: Font.Design = .rounded
 
+    /// UnifrakturMaguntia: blackletter, a nod to the golem's old-Prague roots.
+    /// Bundled in `Resources/Fonts` (free OFL license, kept next to it) and
+    /// only used for big headings, because blackletter is hard to read small.
+    static let headingFontName = "UnifrakturMaguntia"
+
+    /// The golem's own lines ("Time's up", etc.). Scales with Dynamic Type.
+    /// Use it via `.golemLine()`, which also switches off the rounded design.
+    static let golemLine = Font.custom(headingFontName, size: 30, relativeTo: .title2)
+
     /// Navigation titles are drawn by UIKit, so SwiftUI fonts don't reach
-    /// them. Called at launch and when the heading font changes (bars that
-    /// are already on screen keep the old font until the app restarts).
+    /// them. Call once at launch.
     @MainActor
-    static func styleNavigationBars(with heading: HeadingFont = .current) {
+    static func styleNavigationBars() {
         let appearance = UINavigationBar.appearance()
-        if let large = UIFont(name: heading.fontName, size: 34) {
+        if let large = UIFont(name: headingFontName, size: 34) {
             appearance.largeTitleTextAttributes = [.font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
         }
-        if let inline = UIFont(name: heading.fontName, size: 20) {
+        if let inline = UIFont(name: headingFontName, size: 20) {
             appearance.titleTextAttributes = [.font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline)]
         }
     }
 }
 
-/// The bundled heading fonts (in `Resources/Fonts`, each with its free OFL
-/// license). Still being tried out, so the debug section has a switch.
-/// Once one is picked, this can shrink back to a single font name.
-enum HeadingFont: String, CaseIterable, Identifiable {
-    /// UnifrakturMaguntia: blackletter, a nod to the golem's old-Prague roots.
-    case blackletter
-    /// Freckle Face: chunky and comic-like.
-    case freckleFace
-
-    static let storageKey = "headingFont"
-
-    /// The saved choice, for code outside SwiftUI views.
-    static var current: HeadingFont {
-        UserDefaults.standard.string(forKey: storageKey).flatMap(HeadingFont.init) ?? .blackletter
-    }
-
-    var id: String { rawValue }
-
-    var name: String {
-        switch self {
-        case .blackletter: "Blackletter"
-        case .freckleFace: "Freckle Face"
-        }
-    }
-
-    var fontName: String {
-        switch self {
-        case .blackletter: "UnifrakturMaguntia"
-        case .freckleFace: "FreckleFace-Regular"
-        }
-    }
-}
-
-/// The golem's own lines ("Time's up", etc.) in the chosen heading font.
-/// Scales with Dynamic Type, and switches off the app-wide rounded design,
-/// which would otherwise replace the custom font with the system one.
-private struct GolemLine: ViewModifier {
-    @AppStorage(HeadingFont.storageKey) private var heading = HeadingFont.blackletter
-
-    func body(content: Content) -> some View {
-        content
-            .font(.custom(heading.fontName, size: 30, relativeTo: .title2))
-            .fontDesign(nil)
-    }
-}
-
 extension View {
-    /// Heading text in the golem's voice. See `GolemLine`.
+    /// Blackletter heading for the golem's lines. The app-wide rounded
+    /// design would otherwise replace the custom font with the system one.
     func golemLine() -> some View {
-        modifier(GolemLine())
+        font(Theme.golemLine)
+            .fontDesign(nil)
     }
 
     /// Paper background behind a `Form` or `List`, with white rows on top.

@@ -73,16 +73,18 @@ a nod to the golem's old-Prague roots. The font is free (OFL), so it's
 bundled in `Golem/Resources/Fonts` with its license. It's only used large,
 because blackletter is hard to read when small. Basilea was considered but
 needs a paid embedding license. Optima was tried and felt too formal. The
-comic-like Freckle Face (also OFL) is bundled too: while the owner tests
-both on a phone, debug builds have a switch at the bottom of the home
-screen (`HeadingFontSection`). Once one is picked, drop the other font and
-the switch. The icon is plain white, like the drawing on paper. The dark and tinted
+comic-like Freckle Face was compared side by side on a phone, and the owner
+preferred blackletter. The icon is plain white, like the drawing on paper. The dark and tinted
 icon variants have a transparent background, so iOS draws its own backdrop.
 Everything lives in `Golem/Design/Theme.swift` and the asset catalog colors
 `Ink`, `Paper` and `Card`, so screens never use raw colors. The source
 drawing is `Design/golem.png`, and `Design/make-icons.sh` regenerates the
 icon and in-app images from it. `Design/golem-eye.png` is the Dynamic Island
 glyph, a single-colour template image.
+
+Next direction (not started): lean further into the plea as a *manuscript
+you write to the golem*, with a page-like plea screen and more of a letter
+than a form, and reword the golem's lines in `GolemVoice` to match.
 
 ## Open questions
 
