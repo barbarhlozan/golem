@@ -44,14 +44,15 @@ struct GolemLiveActivity: Widget {
 
 /// The golem's eyes. Uses the "GolemEye" image from this extension's asset
 /// catalog when it's there, otherwise the SF Symbol `eye.fill`.
-/// White on the black Island; pass `.primary` where the background is light.
+/// White on the black Island, even past the limit (the owner prefers it);
+/// pass `.primary` where the background is light.
 private struct GolemEye: View {
     let state: GolemActivityAttributes.ContentState
     var color: Color = .white
 
     var body: some View {
         icon
-            .foregroundStyle(state.isOverLimit ? .red : color)
+            .foregroundStyle(color)
     }
 
     @ViewBuilder
@@ -69,7 +70,8 @@ private struct GolemEye: View {
     }
 }
 
-/// mm:ss counting up, stopping at the limit. Red if already over.
+/// mm:ss counting up, stopping at the limit. If the time was already up,
+/// it keeps counting past the limit instead.
 ///
 /// Timer texts are greedy and would stretch the Island, so the width is
 /// fixed to fit "00:00" and the digits hug the right edge.
@@ -89,7 +91,7 @@ private struct TimerText: View {
     private var timer: some View {
         if state.isOverLimit {
             Text(state.startedAt, style: .timer)
-                .foregroundStyle(.red)
+                .foregroundStyle(color)
         } else {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
                 .foregroundStyle(color)
