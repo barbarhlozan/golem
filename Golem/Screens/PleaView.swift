@@ -26,8 +26,14 @@ struct PleaView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text(GolemVoice.overLimitTitle(groupName: group.name))
-                        .font(.headline)
+                    VStack(spacing: 12) {
+                        GolemFigure()
+                        Text(GolemVoice.overLimitTitle(groupName: group.name))
+                            .golemLine()
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
                 }
 
                 Section(GolemVoice.pleaReasonPrompt) {
@@ -52,6 +58,7 @@ struct PleaView: View {
                     .disabled(!obstacles.isEmpty)
                 }
             }
+            .golemBackground()
             .navigationTitle(GolemVoice.pleaTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

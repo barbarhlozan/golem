@@ -61,6 +61,29 @@ Simulator today. Both flavours share sources and the bundle ID. The
 `SCREEN_TIME` compile flag plus `Capabilities.screenTime` switch the
 Screen Time parts on.
 
+## 8. Visual style: ink on paper, one hand-drawn golem (2026-11-01)
+
+The owner wanted iOS's clean look with a bit more character, in a
+hand-drawn / doodle direction. So the app stays native SwiftUI (`Form`s,
+system controls) and changes only a few things: the owner's own golem drawing
+(the icon, the plea screen, later the empty states), black ink as the tint
+instead of iOS blue, a warm off-white "paper" background, rounded system
+type for body text, and the blackletter UnifrakturMaguntia for big headings,
+a nod to the golem's old-Prague roots. The font is free (OFL), so it's
+bundled in `Golem/Resources/Fonts` with its license. It's only used large,
+because blackletter is hard to read when small. Basilea was considered but
+needs a paid embedding license. Optima was tried and felt too formal. The
+comic-like Freckle Face (also OFL) is bundled too: while the owner tests
+both on a phone, debug builds have a switch at the bottom of the home
+screen (`HeadingFontSection`). Once one is picked, drop the other font and
+the switch. The icon is plain white, like the drawing on paper. The dark and tinted
+icon variants have a transparent background, so iOS draws its own backdrop.
+Everything lives in `Golem/Design/Theme.swift` and the asset catalog colors
+`Ink`, `Paper` and `Card`, so screens never use raw colors. The source
+drawing is `Design/golem.png`, and `Design/make-icons.sh` regenerates the
+icon and in-app images from it. `Design/golem-eye.png` is the Dynamic Island
+glyph, a single-colour template image.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

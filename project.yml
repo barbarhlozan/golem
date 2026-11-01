@@ -63,6 +63,8 @@ targetTemplates:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSSupportsLiveActivities: true
         LSApplicationQueriesSchemes: [shortcuts]
+        # Bundled fonts (Golem/Resources/Fonts). See Theme.swift.
+        UIAppFonts: [UnifrakturMaguntia-Book.ttf, FreckleFace-Regular.ttf]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cz.hlozanek.golem
