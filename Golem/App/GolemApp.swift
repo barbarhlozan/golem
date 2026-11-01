@@ -8,6 +8,7 @@ struct GolemApp: App {
         WindowGroup {
             HomeView()
                 .environment(model)
+                .golemStyle()
         }
     }
 }

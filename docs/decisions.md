@@ -60,6 +60,21 @@ Simulator today. Both flavours share sources and the bundle ID. The
 `SCREEN_TIME` compile flag plus `Capabilities.screenTime` switch the
 Screen Time parts on.
 
+## 8. Visual style: ink on paper, one hand-drawn golem (2026-11-01)
+
+The owner wanted iOS's clean look with a bit more character, in a
+hand-drawn / doodle direction. So the app stays native SwiftUI (`Form`s,
+system controls) and changes only a few things: the owner's own golem drawing
+(the icon, the plea screen, later the empty states), black ink as the tint
+instead of iOS blue, a warm off-white "paper" background, and SF Rounded
+type. The icon is plain white, like the drawing on paper. The dark and tinted
+icon variants have a transparent background, so iOS draws its own backdrop.
+Everything lives in `Golem/Design/Theme.swift` and the asset catalog colors
+`Ink`, `Paper` and `Card`, so screens never use raw colors. The source
+drawing is `Design/golem.png`, and `Design/make-icons.sh` regenerates the
+icon and in-app images from it. A handwritten font for headings is a possible
+next step. It was left out for now, since it would mean bundling a font file.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or
