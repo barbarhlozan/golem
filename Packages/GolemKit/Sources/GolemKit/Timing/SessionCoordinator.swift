@@ -2,7 +2,8 @@ import Foundation
 import OSLog
 
 /// What happens when an app of a group is opened or closed:
-/// update the group's timer, the Dynamic Island, and the "time's up" notification.
+/// update the group's timer, the Dynamic Island, and (before iOS 26) the
+/// "time's up" notification.
 ///
 /// Called by the Shortcuts actions, the app when it comes to the front,
 /// and the debug buttons.
@@ -24,16 +25,23 @@ public enum SessionCoordinator {
             let session = SessionTracker(store: store).appOpened(groupID: groupID, at: now)
             logger.info("Opened \(group.name), \(Int(session.elapsed(at: now)))s used")
 
-            // Fires immediately if the time is already up.
-            GolemNotifications.scheduleTimeUp(
-                groupID: group.id,
-                groupName: group.name,
-                minutes: group.limitMinutes,
-                at: session.limitDate(limitMinutes: group.limitMinutes, at: now)
-            )
             #if os(iOS)
             await LiveTimer.show(group: group, session: session, at: now)
+            let islandPopsOpen = LiveTimer.popsOpenAtLimit
+            #else
+            let islandPopsOpen = false
             #endif
+
+            // Only where the Island can't pop open at the limit by itself.
+            // Fires immediately if the time is already up.
+            if !islandPopsOpen {
+                GolemNotifications.scheduleTimeUp(
+                    groupID: group.id,
+                    groupName: group.name,
+                    minutes: group.limitMinutes,
+                    at: session.limitDate(limitMinutes: group.limitMinutes, at: now)
+                )
+            }
         }
     }
 

@@ -171,6 +171,33 @@ width. The text rises over a soft black fade, not a hard edge. With Reduce
 Motion on, the screen appears without the animation. The drawing is blurry
 this large; an upscaled version can simply replace the image.
 
+## 13. The Island watches quietly, then pops open at the limit (2026-11-01)
+
+The owner wanted the Island to stay small while you're within your limit
+and to grow, with the golem asking why he's kept awake, once you're past
+it, ideally staying large. iOS has no way to keep the Island expanded: it
+expands on long-press, or for a few seconds when an update carries an
+alert. Golem's code doesn't run while you scroll, and a server push isn't
+possible on a free account. But iOS 26 lets an app book a Live Activity
+to start later, with an alert. So when you open an app within your limit,
+Golem shows the calm timer (white eyes, mm:ss; long-press: group, time
+left and a bar to the limit) and books a red one for the limit. At the
+limit iOS starts it by itself and pops the Island open: red eyes, red
+timer, "Why am I kept awake so long?" and "Just tell me.". Closing the
+app cancels the booking. Verified in the iOS 26.2 Simulator.
+
+Two activities then exist until you leave the app, so iOS shows the red
+one in the Island and the calm one as a small bubble beside it, drawn as
+red eyes. Booking more pop-ups (every few minutes) was possible but would
+pile up bubbles, so reopening an app past the limit is the only other
+pop-up. The "time's up" notification is dropped on iOS 26+, because the
+pop-up replaces it; older iOS keeps it and the plain stale-date switch to
+red. The Lock Screen keeps just a one-line timer: you're rarely scrolling
+there.
+
+The eyes can't loop an animation: a Live Activity is redrawn only when
+its data changes, with at most a short transition, not frame by frame.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or

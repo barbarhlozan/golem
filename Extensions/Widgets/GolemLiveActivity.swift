@@ -3,16 +3,20 @@ import GolemKit
 import SwiftUI
 import WidgetKit
 
-/// The timer in the Dynamic Island and on the Lock Screen.
+/// The timer in the Dynamic Island.
 ///
 /// iOS ticks the timer by itself; the app only says when it started and
-/// when the time runs out. The Island is a single slim line: eyes on the
-/// left, timer on the right.
+/// when the time runs out. Collapsed, the Island is a single slim line:
+/// eyes on the left, timer on the right.
 ///
-/// The golem wants to sleep. While you're within the limit his eyes are
-/// white; once the time is up he's angry: red eyes, red timer, "Plead with
-/// the Golem". The switch happens on its own at the limit, because the app
-/// sets the limit as the Live Activity's stale date and iOS redraws it then.
+/// Within the limit the golem is only watching: white eyes, and a
+/// long-press shows the group, the time left and a bar filling up to the
+/// limit. Past it he's awake and angry: red eyes, a red timer counting on,
+/// and, expanded, his question in place of the bar. `LiveTimer` makes the
+/// Island pop open at that moment.
+///
+/// The Lock Screen gets the same line. It rarely shows, because you're
+/// not scrolling while the phone is locked.
 ///
 /// Tapping it opens the plea for its group (`DeepLink`).
 struct GolemLiveActivity: Widget {
@@ -28,8 +32,6 @@ struct GolemLiveActivity: Widget {
         } dynamicIsland: { context in
             let angry = isAngry(context)
             return DynamicIsland {
-                // Long-press (or a pop-up when reopening an app past the
-                // limit): eyes, group and timer on one line…
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 6) {
                         GolemEyes(isAngry: angry)
@@ -40,16 +42,20 @@ struct GolemLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    TimerText(state: context.state, isAngry: angry, width: 64)
-                        .font(.headline.monospacedDigit())
+                    if angry {
+                        TimerText(state: context.state, isAngry: true, width: 64)
+                            .font(.headline.monospacedDigit())
+                    } else {
+                        TimeLeft(state: context.state)
+                    }
                 }
-                // …and, once he's angry, the plea in the space below
-                // (the slots beside the camera are too narrow for it).
+                // The slots beside the camera are narrow, so the bar and the
+                // golem's question go in the space below.
                 DynamicIslandExpandedRegion(.bottom) {
                     if angry {
-                        Text(GolemVoice.pleadButton)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.red)
+                        GolemQuestion()
+                    } else {
+                        LimitBar(state: context.state)
                     }
                 }
             } compactLeading: {
@@ -60,6 +66,8 @@ struct GolemLiveActivity: Widget {
                 TimerText(state: context.state, isAngry: angry)
                     .font(.system(size: 15, weight: .semibold).monospacedDigit())
             } minimal: {
+                // Also the small bubble beside the Island once the pop-up
+                // at the limit has taken the main spot.
                 GolemEyes(isAngry: angry)
             }
             .keylineTint(angry ? .red : nil)
@@ -76,7 +84,7 @@ struct GolemLiveActivity: Widget {
 
 /// The golem's eyes. Uses the "GolemEye" image from this extension's asset
 /// catalog when it's there, otherwise the SF Symbol `eye.fill`.
-/// White while he tolerates you, red once he's angry.
+/// White while he's watching, red once he's angry.
 private struct GolemEyes: View {
     let isAngry: Bool
     /// The calm colour: white on the black Island, `.primary` on the Lock Screen.
@@ -131,22 +139,53 @@ private struct TimerText: View {
     }
 }
 
-private struct TimerProgress: View {
+/// "3:12 left": the time until the limit, counting down.
+private struct TimeLeft: View {
     let state: GolemActivityAttributes.ContentState
-    let isAngry: Bool
 
     var body: some View {
-        if isAngry {
-            Text(GolemVoice.pleadButton)
-                .foregroundStyle(.red)
-        } else {
-            ProgressView(timerInterval: state.startedAt...state.limitAt, countsDown: false) {
-                EmptyView()
-            } currentValueLabel: {
-                EmptyView()
-            }
-            .tint(.primary)
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(timerInterval: state.startedAt...state.limitAt, countsDown: true)
+                .font(.headline.monospacedDigit())
+                .multilineTextAlignment(.trailing)
+                .frame(width: 52, alignment: .trailing)
+            Text(GolemVoice.islandTimeLeft)
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.6))
         }
+        .foregroundStyle(.white)
+    }
+}
+
+/// A thin bar filling up towards the limit. iOS animates it on its own.
+private struct LimitBar: View {
+    let state: GolemActivityAttributes.ContentState
+
+    var body: some View {
+        ProgressView(timerInterval: state.startedAt...state.limitAt, countsDown: false) {
+            EmptyView()
+        } currentValueLabel: {
+            EmptyView()
+        }
+        .tint(.white)
+        .padding(.horizontal, 8)
+        .padding(.top, 4)
+    }
+}
+
+/// Past the limit: the golem asks why he's still awake.
+private struct GolemQuestion: View {
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(GolemVoice.islandQuestion)
+                .font(.system(.title3, design: .serif).weight(.semibold))
+                .foregroundStyle(.red)
+            Text(GolemVoice.islandPrompt)
+                .font(.system(.subheadline, design: .serif))
+                .foregroundStyle(.white.opacity(0.7))
+        }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -156,16 +195,13 @@ private struct LockScreenTimer: View {
     let isAngry: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                GolemEyes(isAngry: isAngry, calmColor: .primary)
-                Text(groupName)
-                    .font(.headline)
-                Spacer()
-                TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
-                    .font(.title2.monospacedDigit())
-            }
-            TimerProgress(state: state, isAngry: isAngry)
+        HStack {
+            GolemEyes(isAngry: isAngry, calmColor: .primary)
+            Text(groupName)
+                .font(.headline)
+            Spacer()
+            TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
+                .font(.title2.monospacedDigit())
         }
     }
 }
