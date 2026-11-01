@@ -41,24 +41,52 @@ public enum GolemVoice {
     }
 
     // MARK: Plea screen
+    //
+    // Here the golem speaks for himself ("I"), because you're talking to him
+    // face to face. Everywhere else he's "he".
 
-    public static let pleaTitle = "Plead with the Golem"
-    public static let pleaReasonPrompt = "Why must he stay awake?"
+    public static let pleaQuestion = "Why must I stay awake and guard you from the doom?"
+    public static let pleaPlaceholder = "Because…"
+
+    /// The golem's reply under the text box, as you write.
+    public static func pleaHint(
+        obstacles: [PleaRules.Obstacle],
+        hasStartedWriting: Bool,
+        grantedMinutes: Int
+    ) -> String {
+        guard hasStartedWriting else { return "Start writing. I'm listening." }
+
+        var secondsLeft: Int?
+        var lettersLeft: Int?
+        for obstacle in obstacles {
+            switch obstacle {
+            case .mustWait(let seconds): secondsLeft = seconds
+            case .reasonTooShort(let letters): lettersLeft = letters
+            }
+        }
+
+        switch (secondsLeft, lettersLeft) {
+        case let (seconds?, letters?):
+            return "I read slowly. \(seconds)s · \(moreLetters(letters))"
+        case let (seconds?, nil):
+            return "I read slowly. \(seconds)s"
+        case let (nil, letters?):
+            return "Not convinced. \(moreLetters(letters))"
+        case (nil, nil):
+            return "Fine. \(grantedMinutes) minutes, no more."
+        }
+    }
+
+    private static func moreLetters(_ count: Int) -> String {
+        count == 1 ? "1 more letter" : "\(count) more letters"
+    }
 
     public static func overLimitTitle(groupName: String) -> String {
         "\(groupName): he wants to sleep"
     }
 
-    public static func waitHint(secondsLeft: Int) -> String {
-        "The Golem grumbles… \(secondsLeft)s"
-    }
-
-    public static func reasonHint(charactersLeft: Int) -> String {
-        "He's not convinced. Say more (\(charactersLeft) characters)."
-    }
-
     public static func grantButton(minutes: Int) -> String {
-        "Keep him up \(minutes) more minutes"
+        "Keep me up \(minutes) more minutes"
     }
 
     public static let giveUpButton = "Let him sleep"

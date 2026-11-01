@@ -30,7 +30,7 @@ struct HomeView: View {
                 #endif
             }
             .navigationTitle("Golem")
-            .sheet(item: $pleadingGroup) { group in
+            .fullScreenCover(item: $pleadingGroup) { group in
                 PleaView(group: group)
             }
             .alert(
