@@ -45,6 +45,16 @@ public enum SessionCoordinator {
         }
     }
 
+    /// A few seconds after "opened": the timer has appeared, so its
+    /// long-press view can show the details again (`LiveTimer.settle`).
+    public static func settleTimer(groupID: UUID) async {
+        #if os(iOS)
+        await serially {
+            await LiveTimer.settle(groupID: groupID)
+        }
+        #endif
+    }
+
     public static func appClosed(groupID: UUID, at now: Date = .now) async {
         await serially {
             // Ignored when it's just a switch between two apps of the group.

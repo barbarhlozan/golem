@@ -233,6 +233,21 @@ so he's resting, and the time is flowing back.
 - Opening Golem goes straight to the plea only when you've just left a
   group past its limit (within 10 s), or tapped the timer or a notification.
 
+## 16. A new timer starts slim (2026-11-02)
+
+When the automation starts the timer while you're in another app, iOS
+shows it in its large (expanded) form for a moment. Golem doesn't ask for
+that and can't turn it off: Golem has no setting for it, and Golem has to
+start a new timer each time (a timer kept running between visits would
+stay in the Island while you're doing other things).
+
+What Golem decides is what that large form contains. For its first 5 s
+the timer is marked `isStarting`, and its large form is only the slim
+line: eyes and time, no group name or bar, so it widens instead of
+dropping down. "App Opened" waits those 5 s, then clears the mark, so a
+long-press shows the group and the bar again. The pop-ups past the limit
+stay large on purpose.
+
 ## Open questions
 
 - After **Close app** on the shield, the shield stays up until you plead or
@@ -248,7 +263,3 @@ so he's resting, and the time is flowing back.
   because an app may hold only 5 Live Activities, until you reopen the app.
   Push updates from a server (paid account) could pop the Island open every
   10 s for as long as needed.
-- The Island briefly opens wide when the timer starts while you're in
-  another app. Golem doesn't ask for that; it looks like iOS announcing a
-  Live Activity started from the background (the automation's "Notify When
-  Run" is off). Is there a way to start it straight into the slim line?

@@ -11,8 +11,9 @@ import WidgetKit
 ///
 /// Within the limit the golem is only watching: white eyes, and a
 /// long-press shows the group, the time so far and a bar filling up to
-/// the limit. Past it he's awake and angry: red eyes, a red timer counting on,
-/// and, expanded, his question in place of the bar. `LiveTimer` makes the
+/// the limit (for the first seconds only eyes and time, see
+/// `ContentState.isStarting`). Past it he's awake and angry: red eyes, a
+/// red timer counting on, and, expanded, his question in place of the bar. `LiveTimer` makes the
 /// Island pop open at that moment.
 ///
 /// The Lock Screen gets the same line. It rarely shows, because you're
@@ -31,14 +32,19 @@ struct GolemLiveActivity: Widget {
             .widgetURL(DeepLink.plea(groupID: context.attributes.groupID))
         } dynamicIsland: { context in
             let angry = isAngry(context)
+            // Just started: iOS shows the large form for a moment, so keep
+            // it to the slim line instead of dropping down over the screen.
+            let slim = context.state.isStarting && !angry
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 6) {
                         GolemEyes(isAngry: angry)
-                        Text(context.attributes.groupName)
-                            .font(.headline)
-                            .foregroundStyle(angry ? .red : .white)
-                            .lineLimit(1)
+                        if !slim {
+                            Text(context.attributes.groupName)
+                                .font(.headline)
+                                .foregroundStyle(angry ? .red : .white)
+                                .lineLimit(1)
+                        }
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
@@ -54,7 +60,7 @@ struct GolemLiveActivity: Widget {
                             .foregroundStyle(.red)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
-                    } else {
+                    } else if !slim {
                         LimitBar(state: context.state)
                     }
                 }

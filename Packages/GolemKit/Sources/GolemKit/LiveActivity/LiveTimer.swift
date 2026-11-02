@@ -73,8 +73,13 @@ public enum LiveTimer {
             await watching.update(content)
         } else {
             guard canShow else { return }
+            var starting = state
+            starting.isStarting = true
             do {
-                _ = try Activity.request(attributes: attributes, content: content)
+                _ = try Activity.request(
+                    attributes: attributes,
+                    content: ActivityContent(state: starting, staleDate: state.limitAt)
+                )
                 logger.info("Watching \(attributes.groupName)")
             } catch {
                 logger.error("Couldn't start the live timer: \(error.localizedDescription)")
@@ -115,6 +120,22 @@ public enum LiveTimer {
             }
         }
         logger.info("Pop-ups booked for \(attributes.groupName) from \(first)")
+    }
+
+    /// How long iOS shows a new timer in its large form. After this the
+    /// long-press view gets the group name and the bar back.
+    public static let startingSeconds: Double = 5
+
+    /// The new timer has appeared: give the long-press view its details back.
+    public static func settle(groupID: UUID) async {
+        for activity in Activity<GolemActivityAttributes>.activities
+        where activity.attributes.groupID == groupID
+            && activity.activityState == .active
+            && activity.content.state.isStarting {
+            var state = activity.content.state
+            state.isStarting = false
+            await activity.update(ActivityContent(state: state, staleDate: activity.content.staleDate))
+        }
     }
 
     // MARK: Past the limit
