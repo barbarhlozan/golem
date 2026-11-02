@@ -360,6 +360,11 @@ owner drew short loops instead, and code only picks which frame to show.
   `Design/make-frames.sh` cuts them out onto one shared box, so he never
   jumps. Reduce Motion holds a still frame, without sparks.
 
+Later the same day: sparks fly at every phase, more and faster with his
+rage. Asleep, one now and then; falling asleep, one a little more often;
+orange, four; red, ten crackling. Only the counts and rests in
+`LivingGolem.embers` change.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during

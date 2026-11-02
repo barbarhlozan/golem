@@ -22,9 +22,14 @@ struct HomeView: View {
                     ledger
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                // Room for the round + button floating over the bottom.
+                .padding(.bottom, 96)
             }
             .background(Theme.night)
+            .overlay(alignment: .bottomTrailing) {
+                NewGroupButton { model.addGroup() }
+                    .padding(24)
+            }
             .toolbar { toolbar }
             .navigationDestination(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -81,23 +86,13 @@ struct HomeView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                Divider().overlay(Theme.ink.opacity(0.25))
+                // Only between rows: lines above the first and below the
+                // last looked like a table.
+                if group.id != model.settings.groups.last?.id {
+                    Divider().overlay(Theme.ink.opacity(0.25))
+                }
             }
 
-            Button {
-                model.addGroup()
-            } label: {
-                Label(GolemVoice.newGroupButton, systemImage: "plus")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 16)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-        .overlay(alignment: .top) {
-            Divider().overlay(Theme.ink.opacity(0.25))
         }
     }
 
@@ -112,4 +107,22 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environment(GolemModel())
+}
+
+/// A round "+" in the bottom-right corner, the way iOS apps offer "new":
+/// always in reach, and out of the ledger's way.
+private struct NewGroupButton: View {
+    let add: () -> Void
+
+    var body: some View {
+        Button(action: add) {
+            Image(systemName: "plus")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(Theme.night)
+                .frame(width: 56, height: 56)
+                .background(.white, in: Circle())
+                .shadow(color: .black.opacity(0.4), radius: 8, y: 4)
+        }
+        .accessibilityLabel(GolemVoice.newGroupButton)
+    }
 }

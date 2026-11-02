@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Sparks rising around the golem while he's restless or orange, as if a
-/// fire smouldered under him.
+/// Sparks rising around the golem, as if a fire smouldered under him: now
+/// and then while he sleeps, more and more often as he gets angrier.
+/// `LivingGolem` sets how many fly and how long they rest.
 ///
 /// Each spark is one of the owner's hand-drawn embers (three variations):
 /// five frames of a streak flying up through its own tile. The code never moves a drawing; it only
@@ -11,14 +12,15 @@ import SwiftUI
 struct GolemEmbers: View {
     /// How many sparks fly at once.
     let count: Int
+    /// Frames a spark waits between flights, at most. Long rests make
+    /// sparks rare; short ones make them crackle.
+    let maxRest: Int
     /// The golem's drawn height, to place and size the sparks to match.
     let golemHeight: CGFloat
 
     private static let framesPerSecond = 12.0
     private static let frameCount = 5
     private static let variations = 3
-    /// Frames a spark waits between flights, at most.
-    private static let maxRest = 7
 
     /// The ember tile is 180 px on the 900 px canvas of the golem's frames,
     /// whose cropped drawing is 603 px tall.
@@ -55,13 +57,13 @@ struct GolemEmbers: View {
     /// The spark's frame now, or nil while it rests between flights. Each
     /// flight gets its own spot and rest from a hash of (spark, flight).
     private func flight(of spark: Int, at tick: Int) -> Flight? {
-        let cycle = Self.frameCount + Self.maxRest
+        let cycle = Self.frameCount + maxRest
         // Spread the sparks out so they don't all fly together.
         let shifted = tick + spark * 5
         let number = shifted / cycle
         let step = shifted % cycle
         var random = Seed(spark &* 7919 &+ number)
-        let rest = random.next(upTo: Self.maxRest + 1)
+        let rest = random.next(upTo: maxRest + 1)
         guard step >= rest, step - rest < Self.frameCount else { return nil }
 
         // Beside him, left or right of the body, from the knees up to the
@@ -92,7 +94,7 @@ private struct Seed {
 }
 
 #Preview {
-    GolemEmbers(count: 6, golemHeight: 260)
+    GolemEmbers(count: 10, maxRest: 6, golemHeight: 182)
         .frame(width: 400, height: 400)
         .background(.black)
 }

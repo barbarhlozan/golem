@@ -14,7 +14,7 @@ extension GolemVoice {
     // asleep, he needs no explanation.
     public static let homeAsleep = "The Golem is sleeping."
     /// Time flowing back, every group within its limit.
-    public static let homeSettling = "The Golem is settling."
+    public static let homeSettling = "The Golem is falling asleep."
     /// Time flowing back, a group still past its limit.
     public static let homeRumbling = "The Golem is rumbling."
     public static func homeSettlingDetail(time: String) -> String {

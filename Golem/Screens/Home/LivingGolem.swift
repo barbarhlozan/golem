@@ -6,8 +6,9 @@ import SwiftUI
 /// He's played from the owner's hand-drawn frames (`GolemReel` picks them),
 /// a short loop per phase with the eyes opening or closing in between.
 /// Nothing is moved or scaled in code: that broke the hand-drawn look.
-/// Sparks rise around him (`GolemEmbers`) while he's orange or red. A
-/// torchlight glow behind him was tried and dropped: the sparks say it.
+/// Sparks rise around him (`GolemEmbers`): a rare one while he sleeps,
+/// more and faster the angrier he is. A torchlight glow behind him was
+/// tried and dropped: the sparks say it.
 struct LivingGolem: View {
     enum Phase {
         /// A Screen Time shield keeps him up (full build). Eyes open.
@@ -21,7 +22,7 @@ struct LivingGolem: View {
     }
 
     let phase: Phase
-    /// Orange or red, as in the Island: the sparks fly.
+    /// Orange or red, as in the Island: more sparks fly.
     let isWarm: Bool
     /// When you last came straight from a watched app: he wakes, then
     /// settles back into his phase.
@@ -63,7 +64,11 @@ struct LivingGolem: View {
             // A background, so the sparks never widen the screen's layout,
             // and they pass behind him.
             .background {
-                GolemEmbers(count: reduceMotion ? 0 : emberCount, golemHeight: Self.height)
+                GolemEmbers(
+                    count: reduceMotion ? 0 : embers.count,
+                    maxRest: embers.maxRest,
+                    golemHeight: Self.height
+                )
             }
             .task(id: reduceMotion) {
                 guard !reduceMotion else { return }
@@ -76,12 +81,13 @@ struct LivingGolem: View {
             .onChange(of: wokenAt) { reel.wake() }
     }
 
-    /// Sparks while he's restless, fewer once he's orange, none when calm.
-    private var emberCount: Int {
+    /// How many sparks and how rarely (rest in frames, at 12 per second):
+    /// the angrier he is, the more of them and the shorter their rest.
+    private var embers: (count: Int, maxRest: Int) {
         switch phase {
-        case .restless, .keepingWatch: 6
-        case .settling: isWarm ? 3 : 0
-        case .asleep: 0
+        case .restless, .keepingWatch: (10, 6)  // red: crackling
+        case .settling: isWarm ? (4, 20) : (1, 35)  // orange / falling asleep
+        case .asleep: (1, 67)  // one now and then
         }
     }
 
