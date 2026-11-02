@@ -58,7 +58,7 @@ public enum LineWriter {
         )
         return response.content.lines
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines.union(["\""])) }
-            .filter { !$0.isEmpty && $0.count <= 60 }
+            .filter { !$0.isEmpty && $0.count <= 45 }
     }
 
     private static let logger = Logger(subsystem: "cz.hlozanek.golem", category: "Lines")
@@ -68,7 +68,7 @@ public enum LineWriter {
 @available(iOS 26.0, *)
 @Generable
 struct WrittenLines {
-    @Guide(description: "Different short lines, each at most 8 words", .count(20))
+    @Guide(description: "Different short, plain lines about the golem, each at most 6 words", .count(20))
     var lines: [String]
 }
 #endif

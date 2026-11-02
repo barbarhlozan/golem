@@ -327,6 +327,16 @@ The owner wanted home "more polished, and purposeful". Of three sketches
   tried and dropped: it broke the hand-drawn look. Each phase will get
   the owner's own short animation instead.
 
+## 21. The Island's lines are about the golem, in plain words (2026-11-02)
+
+The golem's Island lines were in the first person and a bit elaborate
+("I was dreaming of the river. Fine."). They're now short, plain and about
+him: "The golem woke up.", "The golem is watching.", "The protector is
+watching." At most 6 words, no "I", no wordplay, no questions. Both the
+hand-written lines and the on-device model's instructions changed. Lines
+already written in the old voice are thrown away (`LineBook.currentVoice`)
+and rewritten next time Golem's code runs.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during

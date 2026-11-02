@@ -37,9 +37,9 @@ public enum GolemVoice {
 
     // MARK: His lines in the Island
     //
-    // In the Island he speaks for himself ("I"). The lines come from
-    // `GolemLines`: written ahead by the on-device model where there is
-    // one, otherwise these hand-written ones.
+    // Short and plain, about the golem rather than from him: "The golem
+    // woke up." The lines come from `GolemLines`: written ahead by the
+    // on-device model where there is one, otherwise these hand-written ones.
 
     /// The hand-written lines for each moment, used when there's no
     /// on-device model or its lines haven't been written yet.
@@ -47,47 +47,44 @@ public enum GolemVoice {
         switch moment {
         case .waking:
             [
-                "Mm. I'm up. I'm watching.",
-                "You opened it again. I'm awake now.",
-                "One eye open. Go on.",
-                "I was dreaming of the river. Fine.",
-                "Awake. Briefly, I hope.",
+                "The golem woke up.",
+                "The golem is awake now.",
+                "The golem is watching.",
+                "The protector is watching.",
+                "The golem opens his eyes.",
             ]
         case .stirring:
             [
-                "Almost time. I'm getting restless.",
-                "Nearly your limit. Start wrapping up.",
-                "My eyes are getting heavy. Are yours?",
-                "A minute or so left. I'm counting.",
-                "I'm stirring. Don't make me stand up.",
+                "The golem is getting restless.",
+                "The golem stirs.",
+                "Almost time. The golem knows.",
+                "The protector is getting uneasy.",
+                "The golem counts the minutes.",
             ]
         case .angry:
             [
-                "Why are you keeping me awake?",
-                "Past your limit. I'm still here.",
-                "I should be asleep. So should your thumb.",
-                "Every second here is one I don't sleep.",
-                "Put it down. Let us both rest.",
-                "Still scrolling? I'm still watching.",
+                "The golem is angry.",
+                "Time is up. The golem is watching.",
+                "The golem wants to sleep.",
+                "The protector is still awake.",
+                "The golem asks why you're here.",
+                "Still here. The golem sees it.",
             ]
         }
     }
 
     /// What the on-device model is asked for: a batch of short lines for
-    /// one moment, in the golem's voice.
+    /// one moment, about the golem. The hand-written lines above are the
+    /// example of the tone.
     public static let writerInstructions = """
-        You are the Golem, an old clay golem from Prague who guards a person's attention. \
-        You want to sleep, but every time they open a social media app you wake up and must watch them scroll. \
-        You write very short lines that appear in the iPhone's Dynamic Island. \
-        Each line is at most 8 words, spoken as "I", dry, sleepy and a little grumpy, but caring. \
-        Never lecture, never use hashtags or emoji, never mention being an AI or an app.
+        You write very short lines for an iPhone's Dynamic Island, about the Golem:         an old clay golem from Prague, a protector who guards the user's attention and wants to sleep.         Every time the user opens a social media app, the golem wakes up and watches.         Write about the golem in the third person, in plain, simple words,         like "The golem woke up.", "The golem is watching." or "The protector is watching."         Each line is at most 6 words and one short sentence.         No "I", no clever wordplay, no questions to the user, no hashtags or emoji,         and never mention AI, apps or phones.
         """
 
     public static func writerPrompt(_ moment: GolemMoment, count: Int) -> String {
         let moment = switch moment {
-        case .waking: "they just opened the app and woke you up; you start watching"
-        case .stirring: "they are close to their time limit; you're getting restless"
-        case .angry: "they are past their time limit and still scrolling; you're annoyed and want to know why you're kept awake"
+        case .waking: "the user just opened the app; the golem wakes up and starts watching"
+        case .stirring: "the user is close to their time limit; the golem is getting restless"
+        case .angry: "the user is past their time limit and still scrolling; the golem is angry and wants to sleep"
         }
         return "Write \(count) different lines for this moment: \(moment)."
     }

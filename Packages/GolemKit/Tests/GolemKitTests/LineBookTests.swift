@@ -73,3 +73,28 @@ struct LineBookTests {
         #expect(GolemVoice.fallbackLines(.waking).contains(GolemLines.next(.waking, store: store)))
     }
 }
+
+struct LineBookVoiceTests {
+    @Test func linesInAnOlderVoiceAreThrownAway() throws {
+        let suite = "GolemKitTests.\(UUID().uuidString)"
+        let store = SharedStore(suiteName: suite)
+        var book = LineBook()
+        book.add(["I'm up."], for: .waking)
+        // Pretend it was saved in voice 1, before the voice changed.
+        var json = String(decoding: try JSONEncoder().encode(book), as: UTF8.self)
+        json = json.replacingOccurrences(of: "\"voice\":\(LineBook.currentVoice)", with: "\"voice\":1")
+        UserDefaults(suiteName: suite)!.set(Data(json.utf8), forKey: "lineBook")
+
+        #expect(store.lineBook == LineBook())
+        #expect(GolemVoice.fallbackLines(.waking).contains(GolemLines.next(.waking, store: store)))
+    }
+
+    @Test func linesInTheCurrentVoiceAreKept() {
+        let store = SharedStore(suiteName: "GolemKitTests.\(UUID().uuidString)")
+        var book = LineBook()
+        book.add(["The golem woke up."], for: .waking)
+        store.lineBook = book
+
+        #expect(GolemLines.next(.waking, store: store) == "The golem woke up.")
+    }
+}

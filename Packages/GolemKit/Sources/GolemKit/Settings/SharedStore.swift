@@ -58,7 +58,12 @@ public struct SharedStore: Sendable {
 
     /// The golem's lines written ahead for the Dynamic Island (`GolemLines`).
     public var lineBook: LineBook {
-        get { decoded(LineBook.self, forKey: Key.lineBook) ?? LineBook() }
+        get {
+            guard let book = decoded(LineBook.self, forKey: Key.lineBook), !book.isOutdated else {
+                return LineBook()
+            }
+            return book
+        }
         nonmutating set { encode(newValue, forKey: Key.lineBook) }
     }
 
