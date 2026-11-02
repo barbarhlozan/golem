@@ -16,9 +16,6 @@ public struct GroupSession: Codable, Equatable, Sendable {
     public private(set) var lastOpenedAt: Date?
     public private(set) var lastClosedAt: Date?
 
-    /// Extra time won by pleading.
-    public private(set) var bonusSeconds: TimeInterval = 0
-
     /// Switching between two apps of a group fires "closed" and "opened"
     /// within a moment, in either order. A "closed" this soon after a
     /// second "opened" belongs to the app you left, so it's ignored.
@@ -33,9 +30,14 @@ public struct GroupSession: Codable, Equatable, Sendable {
         countedSeconds + (runningSince.map { now.timeIntervalSince($0) } ?? 0)
     }
 
-    /// How much time you're allowed: the group's limit plus any pleaded bonus.
+    /// How much time you're allowed: the group's limit.
     public func allowance(limitMinutes: Int) -> TimeInterval {
-        TimeInterval(limitMinutes * 60) + bonusSeconds
+        TimeInterval(limitMinutes * 60)
+    }
+
+    /// How far past the limit you are (zero while within it).
+    public func overBy(limitMinutes: Int, at now: Date) -> TimeInterval {
+        max(0, elapsed(at: now) - allowance(limitMinutes: limitMinutes))
     }
 
     public func isOverLimit(limitMinutes: Int, at now: Date) -> Bool {
@@ -55,11 +57,10 @@ public struct GroupSession: Codable, Equatable, Sendable {
     /// The session as it should be seen now, after resting since you left.
     ///
     /// Every second away gives one second back: scroll for 4 minutes, stay
-    /// away for 4 minutes, and the session is fresh again (pleaded bonus
-    /// time included).
+    /// away for 4 minutes, and the session is fresh again.
     ///
     /// The returned session counts its rest from `now`, so it can be stored
-    /// as is (e.g. after a plea).
+    /// as is.
     public func rested(at now: Date) -> GroupSession {
         guard !isRunning, let closed = lastClosedAt else { return self }
 
@@ -108,12 +109,5 @@ public struct GroupSession: Codable, Equatable, Sendable {
         runningSince = nil
         lastClosedAt = now
         return true
-    }
-
-    /// A successful plea: from now on you get `minutes` more,
-    /// no matter how far over the limit you were.
-    public mutating func grant(minutes: Int, limitMinutes: Int, at now: Date) {
-        let needed = elapsed(at: now) - TimeInterval(limitMinutes * 60) + TimeInterval(minutes * 60)
-        bonusSeconds = max(bonusSeconds, needed)
     }
 }

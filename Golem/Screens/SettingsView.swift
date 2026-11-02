@@ -1,14 +1,12 @@
 import GolemKit
 import SwiftUI
 
-/// Everything that isn't needed every day: breaks, plea rules, the
-/// automation guide, and (full build) Screen Time blocking.
+/// Everything that isn't needed every day: the automation guide and
+/// (full build) Screen Time blocking.
 struct SettingsView: View {
     @Environment(GolemModel.self) private var model
 
     var body: some View {
-        @Bindable var model = model
-
         Form {
             Section {
                 NavigationLink("Set up the Shortcuts automations") {
@@ -17,8 +15,6 @@ struct SettingsView: View {
             } footer: {
                 Text("The automations tell Golem when you open and close your apps, which starts the timer in the Dynamic Island.")
             }
-
-            SettingsSection(settings: $model.settings)
 
             if Capabilities.screenTime {
                 screenTimeSection

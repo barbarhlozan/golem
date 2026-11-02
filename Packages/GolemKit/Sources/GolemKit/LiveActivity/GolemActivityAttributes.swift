@@ -22,7 +22,7 @@ public struct GolemActivityAttributes: ActivityAttributes {
         }
     }
 
-    /// Which group it is, so tapping the timer opens that group's plea.
+    /// Which group it is, so tapping the timer opens a talk about that group.
     public var groupID: UUID
     public var groupName: String
 

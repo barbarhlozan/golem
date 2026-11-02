@@ -3,7 +3,7 @@ import Foundation
 /// A set of apps that share one timer, e.g. "Reels" for Instagram + TikTok.
 ///
 /// Switching between apps of the same group keeps the same timer running.
-/// Each group has its own limit; the plea rules are shared by all groups.
+/// Each group has its own limit.
 public struct WatchGroup: Codable, Equatable, Identifiable, Sendable {
     public var id: UUID
     public var name: String

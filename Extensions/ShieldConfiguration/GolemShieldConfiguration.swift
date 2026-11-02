@@ -47,7 +47,7 @@ final class GolemShieldConfiguration: ShieldConfigurationDataSource {
             ),
             primaryButtonLabel: .init(text: GolemVoice.closeButton, color: .black),
             primaryButtonBackgroundColor: .white,
-            secondaryButtonLabel: .init(text: GolemVoice.pleadButton, color: .white)
+            secondaryButtonLabel: .init(text: GolemVoice.talkButton, color: .white)
         )
     }
 }

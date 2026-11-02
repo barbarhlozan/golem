@@ -51,8 +51,7 @@ extension GolemModel {
             let used = Int(session.elapsed(at: .now))
             let state = session.isRunning ? "running" : "paused"
             let opened = session.lastOpenedAt?.formatted(date: .omitted, time: .standard) ?? "never"
-            let bonus = Int(session.bonusSeconds)
-            return "\(group.name): \(used) s, \(state), bonus \(bonus) s, opened \(opened)"
+            return "\(group.name): \(used) s, \(state), opened \(opened)"
         }
     }
 }

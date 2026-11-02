@@ -1,13 +1,13 @@
 import Foundation
 import UserNotifications
 
-/// Local notifications. Tapping any of them opens the app,
-/// which then offers the plea screen. Each carries its group's ID
-/// (`groupID(of:)`), so Golem opens the plea for that exact group.
+/// Local notifications. Tapping any of them opens the app, which then
+/// opens the conversation with the golem. Each carries its group's ID
+/// (`groupID(of:)`), so the golem knows which group you came from.
 public enum GolemNotifications {
     private enum ID {
         static let timeUp = "timeUp"
-        static let plea = "plea"
+        static let talk = "talk"
     }
 
     private static let groupIDKey = "groupID"
@@ -38,14 +38,14 @@ public enum GolemNotifications {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [ID.timeUp])
     }
 
-    /// Sent when "Plead with the Golem" is tapped on the shield.
+    /// Sent when "Talk to the golem" is tapped on the shield.
     /// Extensions can't open the app themselves, so this is the doorway.
-    public static func sendPleaInvitation() {
+    public static func sendTalkInvitation() {
         send(
-            id: ID.plea,
+            id: ID.talk,
             groupID: nil,
-            title: GolemVoice.pleaNotificationTitle,
-            body: GolemVoice.pleaNotificationBody,
+            title: GolemVoice.talkNotificationTitle,
+            body: GolemVoice.talkNotificationBody,
             at: .now
         )
     }

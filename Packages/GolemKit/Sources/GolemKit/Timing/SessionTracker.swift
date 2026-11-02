@@ -55,16 +55,6 @@ public struct SessionTracker: Sendable {
         return store.settings.groups.first { sessions[$0.id]?.isRunning == true }
     }
 
-    /// A successful plea for one group.
-    public func grantMoreTime(groupID: UUID, at now: Date) {
-        let settings = store.settings
-        guard let group = settings.group(id: groupID) else { return }
-
-        var session = session(for: groupID, at: now)
-        session.grant(minutes: settings.pleaRules.grantedMinutes, limitMinutes: group.limitMinutes, at: now)
-        store.sessions[groupID] = session
-    }
-
     /// The group's session as it should be seen now (rested since you left).
     public func session(for groupID: UUID, at now: Date) -> GroupSession {
         (store.sessions[groupID] ?? GroupSession())
@@ -76,8 +66,8 @@ public struct SessionTracker: Sendable {
         session(for: groupID, at: now).isResting
     }
 
-    /// Groups that have used up their time and need a plea,
-    /// the one you were in most recently first.
+    /// Groups that have used up their time, the one you were in most
+    /// recently first.
     public func groupsOverLimit(at now: Date) -> [WatchGroup] {
         let overLimit = store.settings.groups.filter { group in
             session(for: group.id, at: now).isOverLimit(limitMinutes: group.limitMinutes, at: now)
@@ -85,17 +75,6 @@ public struct SessionTracker: Sendable {
         let sessions = store.sessions
         return overLimit.sorted {
             (sessions[$0.id]?.lastOpenedAt ?? .distantPast) > (sessions[$1.id]?.lastOpenedAt ?? .distantPast)
-        }
-    }
-
-    /// Groups over their limit that you left just now: you came to Golem
-    /// straight from scrolling past it. Later on he's asleep (resting), so
-    /// opening Golem then shouldn't drag you into a plea again.
-    public func groupsJustLeftOverLimit(at now: Date, within seconds: TimeInterval = 10) -> [WatchGroup] {
-        let sessions = store.sessions
-        return groupsOverLimit(at: now).filter { group in
-            guard let closed = sessions[group.id]?.lastClosedAt else { return false }
-            return now.timeIntervalSince(closed) < seconds
         }
     }
 }

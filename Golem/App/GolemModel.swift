@@ -21,19 +21,19 @@ final class GolemModel {
     private(set) var isAuthorized: Bool
 
     /// Groups whose time is up, either by the Shortcuts timer or the
-    /// Screen Time shield. Each needs a plea before more scrolling.
-    private(set) var groupsNeedingPlea: [WatchGroup] = []
+    /// Screen Time shield. While one is, you can talk to the golem.
+    private(set) var groupsOverLimit: [WatchGroup] = []
 
     /// Whether the golem is awake on the home screen. Only a Screen Time
     /// shield keeps him up: otherwise you've left the apps (you're in Golem)
     /// and he's asleep, resting, even if a group is still over its limit.
     private(set) var isGolemAwake = false
 
-    /// A plea someone asked for by tapping a notification or the timer.
-    /// Nil group: no group named, plead for the most recent one.
-    private(set) var pleaRequest: PleaRequest?
+    /// A talk someone asked for by tapping the timer, a notification or the
+    /// shield. Nil group: none named, talk about the most recent one.
+    private(set) var talkRequest: TalkRequest?
 
-    struct PleaRequest: Equatable {
+    struct TalkRequest: Equatable {
         let groupID: UUID?
     }
 
@@ -62,7 +62,7 @@ final class GolemModel {
         // Most recently used first (see `SessionTracker.groupsOverLimit`).
         let overLimit = SessionTracker(store: store).groupsOverLimit(at: .now)
         let shielded = settings.groups.filter { store.shieldedGroupIDs.contains($0.id) }
-        groupsNeedingPlea = overLimit + shielded.filter { group in
+        groupsOverLimit = overLimit + shielded.filter { group in
             !overLimit.contains { $0.id == group.id }
         }
         isGolemAwake = !shielded.isEmpty
@@ -99,8 +99,16 @@ final class GolemModel {
         SessionTracker(store: store).isResting(group.id, at: refreshedAt)
     }
 
-    func needsPlea(_ group: WatchGroup) -> Bool {
-        groupsNeedingPlea.contains { $0.id == group.id }
+    func isOverLimit(_ group: WatchGroup) -> Bool {
+        groupsOverLimit.contains { $0.id == group.id }
+    }
+
+    /// How far past its limit the group is (zero within it). Shrinks while
+    /// the golem rests.
+    func overBySeconds(of group: WatchGroup) -> TimeInterval {
+        let now = refreshedAt
+        return SessionTracker(store: store).session(for: group.id, at: now)
+            .overBy(limitMinutes: group.limitMinutes, at: now)
     }
 
     // MARK: Permissions
@@ -134,40 +142,23 @@ final class GolemModel {
         refresh()
     }
 
-    // MARK: Pleading
+    // MARK: Talking to the golem
 
-    func requestPlea(groupID: UUID?) {
-        pleaRequest = PleaRequest(groupID: groupID)
+    func requestTalk(groupID: UUID?) {
+        talkRequest = TalkRequest(groupID: groupID)
     }
 
-    /// Which group to plead for now, if any. After a tap on the timer or a
-    /// notification: the tapped group if its time is really up, otherwise
-    /// the group you were in most recently. Without a tap, only a group you
-    /// left past its limit just now: after "Sorry. Sleep well." he stays
-    /// asleep when you come back. Clears the request.
-    func takeGroupToPlead() -> WatchGroup? {
+    /// Which group to talk about after a tap: the tapped one, or without
+    /// one named, the group over its limit you were in most recently.
+    /// Clears the request. Nothing opens by itself without a tap.
+    func takeGroupToTalk() -> WatchGroup? {
+        guard let request = talkRequest else { return nil }
+        talkRequest = nil
         refresh()
-        guard let request = pleaRequest else {
-            let justLeft = SessionTracker(store: store).groupsJustLeftOverLimit(at: .now)
-            return groupsNeedingPlea.first { group in justLeft.contains { $0.id == group.id } }
+        if let id = request.groupID, let group = settings.group(id: id) {
+            return group
         }
-        pleaRequest = nil
-        return groupsNeedingPlea.first { $0.id == request.groupID } ?? groupsNeedingPlea.first
-    }
-
-    /// Called when a plea succeeded: the group gets `grantedMinutes` more.
-    func grantMoreTime(for group: WatchGroup) {
-        SessionTracker(store: store).grantMoreTime(groupID: group.id, at: .now)
-
-        if Capabilities.screenTime, store.shieldedGroupIDs.contains(group.id) {
-            Shields.lower(groupID: group.id, store: store)
-            do {
-                try Monitoring.start(group, limitMinutes: settings.pleaRules.grantedMinutes)
-            } catch {
-                errorMessage = "Couldn't restart the timer: \(error.localizedDescription)"
-            }
-        }
-        refresh()
+        return groupsOverLimit.first
     }
 
     // MARK: Testing without Shortcuts

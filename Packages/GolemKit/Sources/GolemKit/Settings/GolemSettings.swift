@@ -9,13 +9,9 @@ public struct GolemSettings: Codable, Equatable, Sendable {
     /// The groups of apps, each with its own timer and limit.
     public var groups: [WatchGroup]
 
-    /// What you have to do to get more time. Shared by all groups.
-    public var pleaRules: PleaRules
-
-    public init(isWatching: Bool, groups: [WatchGroup], pleaRules: PleaRules) {
+    public init(isWatching: Bool, groups: [WatchGroup]) {
         self.isWatching = isWatching
         self.groups = groups
-        self.pleaRules = pleaRules
     }
 
     /// Two starter groups to show the idea; users rename, add and delete
@@ -25,8 +21,7 @@ public struct GolemSettings: Codable, Equatable, Sendable {
         groups: [
             WatchGroup(name: "Reels", limitMinutes: 5),   // Instagram, TikTok, YouTube Shorts…
             WatchGroup(name: "Feeds", limitMinutes: 10),  // X, Bluesky, Threads…
-        ],
-        pleaRules: .default
+        ]
     )
 
     public func group(id: UUID) -> WatchGroup? {

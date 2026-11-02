@@ -3,13 +3,13 @@ import Testing
 @testable import GolemKit
 
 struct DeepLinkTests {
-    @Test func pleaLinkRoundTrips() {
+    @Test func talkLinkRoundTrips() {
         let id = UUID()
-        #expect(DeepLink.pleaGroupID(from: DeepLink.plea(groupID: id)) == id)
+        #expect(DeepLink.talkGroupID(from: DeepLink.talk(groupID: id)) == id)
     }
 
     @Test func otherLinksAreIgnored() {
-        #expect(DeepLink.pleaGroupID(from: URL(string: "golem://home")!) == nil)
-        #expect(DeepLink.pleaGroupID(from: URL(string: "https://plea/\(UUID())")!) == nil)
+        #expect(DeepLink.talkGroupID(from: URL(string: "golem://home")!) == nil)
+        #expect(DeepLink.talkGroupID(from: URL(string: "https://talk/\(UUID())")!) == nil)
     }
 }

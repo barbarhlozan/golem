@@ -1,9 +1,9 @@
 // swift-tools-version: 6.0
 
 // GolemKit is the code shared by the Golem app and its extensions:
-// settings, the plea rules, the Golem's wording, and the Screen Time glue.
+// settings, the timers, the Golem's wording, and the Screen Time glue.
 //
-// The plain-Swift parts (settings, plea rules, wording) also build on macOS,
+// The plain-Swift parts (settings, timers, wording) also build on macOS,
 // so `swift test` runs in seconds without a simulator.
 
 import PackageDescription

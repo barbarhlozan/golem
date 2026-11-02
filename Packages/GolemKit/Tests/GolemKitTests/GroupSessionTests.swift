@@ -89,7 +89,7 @@ struct GroupSessionTests {
         session.appOpened(at: t(0))
         session.appClosed(at: t(600))
 
-        // Stored halfway (as a plea does), then rested again later:
+        // Stored halfway, then rested again later:
         // the same as resting in one go.
         let halfway = session.rested(at: t(900))
         let later = halfway.rested(at: t(1000))
@@ -119,6 +119,14 @@ struct GroupSessionTests {
         #expect(!session.rested(at: t(240)).isResting)  // fresh again
     }
 
+    @Test func overByIsZeroWithinTheLimit() {
+        var session = GroupSession()
+        session.appOpened(at: t(0))
+
+        #expect(session.overBy(limitMinutes: 5, at: t(4 * 60)) == 0)
+        #expect(session.overBy(limitMinutes: 5, at: t(6 * 60)) == 60)
+    }
+
     @Test func limitDateAccountsForTimeAlreadyUsed() {
         var session = GroupSession()
         session.appOpened(at: t(0))
@@ -131,16 +139,6 @@ struct GroupSessionTests {
         #expect(session.startDate(at: t(180)) == t(120))
     }
 
-    @Test func pleadingGrantsMinutesFromNow() {
-        var session = GroupSession()
-        session.appOpened(at: t(0))
-        session.appClosed(at: t(9 * 60))   // 9 min used, limit 5 → 4 over
-
-        session.grant(minutes: 5, limitMinutes: 5, at: t(9 * 60))
-
-        #expect(!session.isOverLimit(limitMinutes: 5, at: t(9 * 60)))
-        #expect(session.allowance(limitMinutes: 5) == 14 * 60)
-    }
 }
 
 struct SessionTrackerTests {
@@ -167,27 +165,6 @@ struct SessionTrackerTests {
         #expect(tracker.runningGroup() == nil)
         #expect(tracker.session(for: social.id, at: t(60)).elapsed(at: t(60)) == 60)
         #expect(!tracker.stopAll(at: t(70)))
-    }
-
-    @Test func asksRightAfterYouLeavePastTheLimit() {
-        let tracker = SessionTracker(store: store)
-        let limit = TimeInterval(social.limitMinutes * 60)
-        tracker.appOpened(groupID: social.id, at: t(0))
-        tracker.stopAll(at: t(limit + 30))
-
-        #expect(tracker.groupsJustLeftOverLimit(at: t(limit + 32)).map(\.id) == [social.id])
-    }
-
-    /// After "Sorry. Sleep well." he's resting; coming back to Golem
-    /// later shouldn't wake him for another plea.
-    @Test func letsHimSleepLater() {
-        let tracker = SessionTracker(store: store)
-        let limit = TimeInterval(social.limitMinutes * 60)
-        tracker.appOpened(groupID: social.id, at: t(0))
-        tracker.stopAll(at: t(limit + 30))
-
-        #expect(tracker.groupsOverLimit(at: t(limit + 50)).map(\.id) == [social.id])
-        #expect(tracker.groupsJustLeftOverLimit(at: t(limit + 50)).isEmpty)
     }
 
     @Test func mostRecentGroupOverLimitComesFirst() {

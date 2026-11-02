@@ -6,7 +6,7 @@ extension DeviceActivityName {
     private static let groupPrefix = "group-"
 
     /// Each group has its own all-day schedule, so restarting one
-    /// group's count (after a plea) doesn't touch the others.
+    /// group's count doesn't touch the others.
     public static func group(_ id: UUID) -> Self {
         Self(groupPrefix + id.uuidString)
     }

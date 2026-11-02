@@ -4,8 +4,8 @@ import ManagedSettings
 /// Handles taps on the shield's buttons.
 ///
 /// - Close app → leave the app.
-/// - Plead with the Golem → send a notification that opens Golem's plea
-///   screen (extensions can't open the app directly) and keep the shield up.
+/// - Talk to the golem → send a notification that opens the conversation
+///   with him (extensions can't open the app directly); the shield stays up.
 final class GolemShieldAction: ShieldActionDelegate {
     override func handle(
         action: ShieldAction,
@@ -36,7 +36,7 @@ final class GolemShieldAction: ShieldActionDelegate {
         case .primaryButtonPressed:
             return .close
         case .secondaryButtonPressed:
-            GolemNotifications.sendPleaInvitation()
+            GolemNotifications.sendTalkInvitation()
             return .defer
         default:
             // Golem's shield has no submenu items (newer iOS versions allow them).

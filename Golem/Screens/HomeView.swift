@@ -1,18 +1,18 @@
 import GolemKit
 import SwiftUI
 
-/// The main screen: the golem and how he feels, your groups, and the way
-/// into a plea. Everything else (breaks, plea rules, automations, blocking)
-/// is behind the gear in `SettingsView`.
+/// The main screen: the golem and how he feels, your groups, and, while a
+/// group is over its limit, the way to talk to him. Everything else
+/// (automations, blocking) is behind the gear in `SettingsView`.
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var pleadingGroup: WatchGroup?
+    @State private var talkingGroup: WatchGroup?
     @State private var isShowingSettings = false
     @State private var isShowingDebug = false
-    /// The debug menu asks for a plea; shown once that sheet is gone.
-    @State private var pleaAfterDebug: WatchGroup?
+    /// The debug menu asks for a talk; shown once that sheet is gone.
+    @State private var talkAfterDebug: WatchGroup?
 
     var body: some View {
         NavigationStack {
@@ -21,8 +21,8 @@ struct HomeView: View {
                     GolemMood(isAngry: model.isGolemAwake)
                         .padding(.bottom, 8)
 
-                    ForEach(model.groupsNeedingPlea) { group in
-                        PleaCard(group: group) { pleadingGroup = group }
+                    ForEach(model.groupsOverLimit) { group in
+                        TalkCard(group: group, overBy: overByText(group)) { talkingGroup = group }
                     }
 
                     groups
@@ -36,16 +36,16 @@ struct HomeView: View {
             .navigationDestination(isPresented: $isShowingSettings) {
                 SettingsView()
             }
-            .fullScreenCover(item: $pleadingGroup) { group in
-                PleaView(group: group)
+            .fullScreenCover(item: $talkingGroup) { group in
+                TalkView(group: group, overBy: overByText(group))
             }
             #if DEBUG
             .sheet(isPresented: $isShowingDebug, onDismiss: {
-                pleadingGroup = pleaAfterDebug
-                pleaAfterDebug = nil
+                talkingGroup = talkAfterDebug
+                talkAfterDebug = nil
             }) {
                 DebugMenu { group in
-                    pleaAfterDebug = group
+                    talkAfterDebug = group
                     isShowingDebug = false
                 }
             }
@@ -64,7 +64,7 @@ struct HomeView: View {
             await model.requestPermissions()
         }
         // While the golem rests, used time flows back by the second: re-read
-        // it so the cards, the plea cards and his mood keep up.
+        // it so the cards, the talk cards and his mood keep up.
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
@@ -75,26 +75,25 @@ struct HomeView: View {
             guard scenePhase == .active else { return }
             Task {
                 await model.appBecameActive()
-                offerPlea()
+                offerTalk()
             }
         }
-        // A tapped notification or timer names its group.
-        .onChange(of: model.pleaRequest) {
-            guard let request = model.pleaRequest else { return }
-            offerPlea(replacing: request.groupID != nil)
+        // A tapped timer, notification or shield names its group.
+        .onChange(of: model.talkRequest) { offerTalk() }
+    }
+
+    /// After a tap on the timer, a notification or the shield: open the
+    /// conversation for that group. Nothing opens by itself otherwise.
+    private func offerTalk() {
+        if let group = model.takeGroupToTalk() {
+            talkingGroup = group
         }
     }
 
-    /// Whenever Golem comes to the front with a group's time up (from a
-    /// notification, the timer, or just opening it): go straight to the
-    /// plea, for the group that was tapped if one was.
-    /// `replacing`: a tap named a group, which wins over the one Golem
-    /// picked itself a moment earlier when it came to the front.
-    private func offerPlea(replacing: Bool = false) {
-        guard pleadingGroup == nil || replacing else { return }
-        if let group = model.takeGroupToPlead() {
-            pleadingGroup = group
-        }
+    /// "1:24" while the group is over its limit, nil within it.
+    private func overByText(_ group: WatchGroup) -> String? {
+        let overBy = model.overBySeconds(of: group)
+        return overBy >= 1 ? TalkView.minutesSeconds(overBy) : nil
     }
 
     // MARK: Parts
@@ -111,7 +110,7 @@ struct HomeView: View {
                         group: group,
                         usedSeconds: model.usedSeconds(of: group),
                         isResting: model.isResting(group),
-                        isOverLimit: model.needsPlea(group)
+                        isOverLimit: model.isOverLimit(group)
                     )
                 }
                 .buttonStyle(.plain)
@@ -157,18 +156,25 @@ private struct GolemMood: View {
     }
 }
 
-/// A group past its limit: the way to wake the golem and plead for more.
-/// Calm, not red, because he's asleep while you're here.
-private struct PleaCard: View {
+/// A group past its limit: the way to talk to the golem while its time
+/// flows back. Calm, not red, because he's asleep while you're here.
+private struct TalkCard: View {
     let group: WatchGroup
-    let plead: () -> Void
+    let overBy: String?
+    let talk: () -> Void
 
     var body: some View {
-        Button(action: plead) {
+        Button(action: talk) {
             HStack {
-                Text(GolemVoice.overLimitTitle(groupName: group.name))
-                    .font(.headline)
-                    .multilineTextAlignment(.leading)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(GolemVoice.talkCardTitle)
+                        .font(.headline)
+                    if let overBy {
+                        Text(GolemVoice.talkCardSubtitle(groupName: group.name, overBy: overBy))
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
                 Image(systemName: "chevron.right")
             }

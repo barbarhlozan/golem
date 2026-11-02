@@ -14,7 +14,7 @@ information in two ways:
 
 | Piece                      | Framework         | Job                                                  |
 |----------------------------|-------------------|------------------------------------------------------|
-| Golem app                  | SwiftUI           | Groups, settings, pleading, setup guide              |
+| Golem app                  | SwiftUI, FoundationModels | Groups, settings, setup guide, talking to the golem |
 | `AppOpenedIntent` / `AppClosedIntent` | AppIntents | Shortcuts actions; start/pause a group's timer |
 | `SessionCoordinator`       | —                 | On open/close: timer, Dynamic Island, pop-up at limit  |
 | `GolemWidgets`             | WidgetKit         | Draws the Dynamic Island / Lock Screen timer         |
@@ -42,21 +42,22 @@ information in two ways:
  Time runs out → the Island pops open, red: "Why are you keeping me awake?"
         │  (older iOS: it turns red, plus the notification)
         │  Reopening the app past the limit pops it open again (and rebooks).
-        │  Tapping it → Golem opens the plea screen
-        │  wait the countdown + write a reason (PleaRules)
+        │  It stays red, counting how far over you are. Nothing to earn.
+        │  Tapping it → Golem opens the conversation with him (TalkView):
+        │  on-device model if available (GolemBrain), else his own lines
         ▼
- Granted: the group gets `grantedMinutes` more, counted from now
+ You leave → the time flows back until you're under the limit again
 
  You close the app → AppClosedIntent: timer pauses, Island disappears.
  Opening Golem stops every timer (no watched app can be open then).
  While you're away, used time flows back: a second for every second away.
 
- Tapping the timer (golem://plea/<group id>) or a notification (groupID in
- userInfo) opens the plea for that group. SessionCoordinator handles
+ Tapping the timer (golem://talk/<group id>) or a notification (groupID in
+ userInfo) opens the conversation about that group. SessionCoordinator handles
  events one at a time, so a late "opened" can't undo a "closed".
 ```
 
-The rules for counting (switching, resting, pleas) live in `GroupSession` and
+The rules for counting (switching, resting) live in `GroupSession` and
 are covered by unit tests.
 
 ## The blocking loop (full flavour)
@@ -68,21 +69,21 @@ are covered by unit tests.
  GolemMonitor → Shields.raise(group) + notification
         ▼
  Shield ── "Close app" ──▶ app closes, shield stays up
-        │ "Plead with the Golem" → notification → Golem's plea screen
+        │ "Talk to the golem" → notification → the conversation
         ▼
- Granted: Shields.lower(group) + restart that group's count at grantedMinutes
+ The shield lifts at midnight or when you stop blocking (see open questions)
 ```
 
 Each group has its own named `ManagedSettingsStore` and its own
-`DeviceActivityName`, so one group's shield or plea doesn't touch the others.
+`DeviceActivityName`, so one group's shield doesn't touch the others.
 
 ## Shared state (`SharedStore`)
 
 | Key                | Written by                     | Read by                     |
 |--------------------|--------------------------------|-----------------------------|
 | `settings`         | app                            | everyone                    |
-| `sessions`         | Shortcuts actions, plea        | app, Shortcuts actions      |
-| `shieldedGroupIDs` | `Shields` (app/monitor)        | app (shows the plea button) |
+| `sessions`         | Shortcuts actions, app         | app, Shortcuts actions      |
+| `shieldedGroupIDs` | `Shields` (app/monitor)        | app (the golem's mood)      |
 
 GolemLite has no App Group. There the store stays inside the app, which is
 fine because the Shortcuts actions run in the app's own process.
@@ -97,6 +98,6 @@ fine because the Shortcuts actions run in the app's own process.
   "Is Closed" on lock, and unlocking back into the app fires no
   "Is Opened". So locked time counts until you leave the app or open Golem.
 - **Screen Time counts minutes, not seconds**, and its "in a row" is
-  approximated by restarting a group's count after each plea.
+  approximated by the all-day schedule; it doesn't know about resting.
 - **No Screen Time in the Simulator.** There `Capabilities.screenTime` is
   false, even in the full flavour.

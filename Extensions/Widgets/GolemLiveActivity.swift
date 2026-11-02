@@ -18,7 +18,7 @@ import WidgetKit
 /// The Lock Screen gets the same line. It rarely shows, because you're
 /// not scrolling while the phone is locked.
 ///
-/// Tapping it opens the plea for its group (`DeepLink`).
+/// Tapping it opens a talk with the golem about its group (`DeepLink`).
 struct GolemLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GolemActivityAttributes.self) { context in
@@ -28,7 +28,7 @@ struct GolemLiveActivity: Widget {
                 isAngry: isAngry(context)
             )
             .padding()
-            .widgetURL(DeepLink.plea(groupID: context.attributes.groupID))
+            .widgetURL(DeepLink.talk(groupID: context.attributes.groupID))
         } dynamicIsland: { context in
             let angry = isAngry(context)
             return DynamicIsland {
@@ -69,7 +69,7 @@ struct GolemLiveActivity: Widget {
                 GolemEyes(isAngry: angry)
             }
             .keylineTint(angry ? .red : nil)
-            .widgetURL(DeepLink.plea(groupID: context.attributes.groupID))
+            .widgetURL(DeepLink.talk(groupID: context.attributes.groupID))
         }
     }
 

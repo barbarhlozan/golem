@@ -233,14 +233,28 @@ so he's resting, and the time is flowing back.
 - Opening Golem goes straight to the plea only when you've just left a
   group past its limit (within 10 s), or tapped the timer or a notification.
 
+## 16. No pleading; you can talk to the golem instead (2026-11-02)
+
+In use, the golem's presence did the job: the red, still-counting timer in
+the Island kept the time in mind, while the plea (wait, write a reason,
+"Keep me up 5 more minutes") added friction that didn't block anything. So
+pleading, the plea rules and pleaded bonus time are gone. Past the limit
+the Island stays red until the time flows back. While a group is over its
+limit, a calm "Talk to the golem" card sits on the home screen, and tapping
+the red Island, a "time's up" notification or the shield opens the same
+conversation: the black, face-to-face screen, now as a chat. With Apple's
+on-device model (FoundationModels, iOS 26+, Apple Intelligence on) he
+really answers, in character, from `GolemVoice.talkInstructions`; nothing
+leaves the phone. Without it he replies with hand-written lines
+(`GolemVoice.talkFallbackReplies`). Nothing opens by itself any more. In
+the full build the shield now only lifts at midnight or when blocking is
+stopped (an open question below).
+
 ## Open questions
 
-- After **Close app** on the shield, the shield stays up until you plead or
-  until midnight. Should it lift on its own once the golem has rested,
-  matching the timer's one-to-one rest?
-- In GolemLite, nothing stops you once the time is up. Should the
-  automation itself open Golem's plea screen (e.g. an "If over limit → Open
-  Golem" step), instead of relying on the notification?
+- Full build: without pleading, a group's Screen Time shield stays up until
+  midnight (or until blocking is stopped). Should it lift on its own once
+  the group has rested back under its limit, matching the one-to-one rest?
 - Does restarting Screen Time monitoring really reset the count on a device?
   Verify once a paid account is available.
 - With a paid account, should the golem keep demanding an answer past the
