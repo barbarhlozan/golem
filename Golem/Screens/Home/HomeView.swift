@@ -1,12 +1,15 @@
 import GolemKit
 import SwiftUI
 
-/// The main screen: the golem big, how he feels and why, then a ledger of
-/// your groups. Everything else (automations, blocking, the debug menu) is
-/// behind the gear in `SettingsView`.
+/// The main screen: the golem big, how he feels and why, then your groups.
+/// Everything else (automations, blocking, the debug menu) is behind the
+/// gear in `SettingsView`.
 ///
-/// It's always dark (`Theme.night`): the white golem reads best on the
-/// ink of his own outline.
+/// It follows Apple's conventions: the buttons ("+" to add a group, the
+/// gear) live in the navigation bar, and the groups are a real
+/// list, so rows highlight when tapped and swipe left to delete. It's
+/// always dark (`Theme.night`): the white golem reads best on the ink of
+/// his own outline.
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -16,20 +19,24 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 28) {
-                    GolemMood(isShowingSetupGuide: $isShowingSetupGuide)
-                    ledger
-                }
-                .padding(.horizontal, 24)
-                // Room for the round + button floating over the bottom.
-                .padding(.bottom, 96)
+            List {
+                GolemMood(isShowingSetupGuide: $isShowingSetupGuide)
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
+
+                groups
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Theme.night)
-            .overlay(alignment: .bottomTrailing) {
-                NewGroupButton { model.addGroup() }
-                    .padding(24)
-            }
+            // No visible title: the golem is the heading. The title is still
+            // set, so screens pushed from here get "‹ Golem" as their back
+            // button; it's only removed from this bar.
+            .navigationTitle(GolemVoice.homeTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .hidingBarTitle()
             .toolbar { toolbar }
             .navigationDestination(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -69,37 +76,58 @@ struct HomeView: View {
 
     // MARK: Parts
 
-    /// Groups as ruled rows on the dark page, not cards, so the golem
-    /// stays the one thing that stands out.
-    private var ledger: some View {
+    /// One row per group, with thin lines only between them. The row draws
+    /// its own arrow (next to the limit), so the list's built-in one is
+    /// hidden by putting the link behind the row.
+    private var groups: some View {
         @Bindable var model = model
+        let firstID = model.settings.groups.first?.id
+        let lastID = model.settings.groups.last?.id
 
-        return VStack(spacing: 0) {
-            ForEach($model.settings.groups) { $group in
+        return ForEach($model.settings.groups) { $group in
+            GroupRow(
+                group: group,
+                usedSeconds: model.usedSeconds(of: group),
+                isOverLimit: model.isOverLimit(group)
+            )
+            .background {
                 NavigationLink {
                     GroupEditView(group: $group)
                 } label: {
-                    GroupRow(
-                        group: group,
-                        usedSeconds: model.usedSeconds(of: group),
-                        isOverLimit: model.isOverLimit(group)
-                    )
+                    EmptyView()
                 }
-                .buttonStyle(.plain)
-                // Only between rows: lines above the first and below the
-                // last looked like a table.
-                if group.id != model.settings.groups.last?.id {
-                    Divider().overlay(Theme.ink.opacity(0.25))
-                }
+                .opacity(0)
             }
-
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24))
+            .listRowSeparatorTint(Theme.ink.opacity(0.25))
+            .listRowSeparator(group.id == firstID ? .hidden : .automatic, edges: .top)
+            .listRowSeparator(group.id == lastID ? .hidden : .automatic, edges: .bottom)
+        }
+        .onDelete { offsets in
+            let ids = offsets.map { model.settings.groups[$0].id }
+            ids.forEach(model.deleteGroup(id:))
         }
     }
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            Button(GolemVoice.newGroupButton, systemImage: "plus") { model.addGroup() }
             Button("Settings", systemImage: "gearshape") { isShowingSettings = true }
+        }
+    }
+}
+
+private extension View {
+    /// Removes the title from the navigation bar but keeps it for the back
+    /// button of pushed screens (iOS 18+; older iOS shows it small).
+    @ViewBuilder
+    func hidingBarTitle() -> some View {
+        if #available(iOS 18.0, *) {
+            toolbar(removing: .title)
+        } else {
+            self
         }
     }
 }
@@ -107,22 +135,4 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environment(GolemModel())
-}
-
-/// A round "+" in the bottom-right corner, the way iOS apps offer "new":
-/// always in reach, and out of the ledger's way.
-private struct NewGroupButton: View {
-    let add: () -> Void
-
-    var body: some View {
-        Button(action: add) {
-            Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(Theme.night)
-                .frame(width: 56, height: 56)
-                .background(.white, in: Circle())
-                .shadow(color: .black.opacity(0.4), radius: 8, y: 4)
-        }
-        .accessibilityLabel(GolemVoice.newGroupButton)
-    }
 }

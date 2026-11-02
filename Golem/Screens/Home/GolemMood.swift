@@ -1,8 +1,9 @@
 import GolemKit
 import SwiftUI
 
-/// The top of the home screen: the golem big, a line on how he feels, and
-/// a smaller one saying why, so the screen answers "am I OK?" at a glance.
+/// The top of the home screen, under the title: the golem big, a line on
+/// how he feels, and a smaller one saying why, so the screen answers
+/// "am I OK?" at a glance.
 ///
 /// His phase comes from the group that worries him most (see `focus`), and
 /// its colour is the Island's: what you'd walk back into if you opened that
@@ -15,10 +16,6 @@ struct GolemMood: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text(GolemVoice.homeTitle)
-                .font(.custom(Theme.headingFontName, size: 48, relativeTo: .largeTitle))
-                .fontDesign(nil)
-
             LivingGolem(phase: phase, isWarm: moment != .waking, wokenAt: model.wokenFromAppAt)
                 .padding(.vertical, 8)
 

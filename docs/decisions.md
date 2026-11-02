@@ -365,6 +365,16 @@ rage. Asleep, one now and then; falling asleep, one a little more often;
 orange, four; red, ten crackling. Only the counts and rests in
 `LivingGolem.embers` change.
 
+## 23. The home screen follows Apple's conventions (2026-11-02)
+
+A floating round "+" turned out to be a Material Design (Android) pattern,
+and the screen felt less like iOS. Now "+" and the gear are plain toolbar
+buttons in the bar (Liquid Glass on iOS 26+
+by themselves), there's no visible title (a left-aligned large title felt
+off; the golem is the heading), and the groups are a real `List`: rows highlight when
+tapped and swipe left to delete. The rows keep their own arrow next to the
+limit, so the list's built-in one is hidden.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during
