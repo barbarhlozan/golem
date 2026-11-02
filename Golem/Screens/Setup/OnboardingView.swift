@@ -12,7 +12,7 @@ struct OnboardingView: View {
 
     private enum Page: Int, CaseIterable {
         // The story, one idea per page (texts in `GolemVoice.storyPages`).
-        case meet, oneSession, backToSleep, breakReset, angry, talk
+        case meet, oneSession, backToSleep, breakReset, angry, stages
         // Setting things up.
         case groups, notifications, automations
     }
@@ -46,7 +46,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var content: some View {
         switch page {
-        case .meet, .oneSession, .backToSleep, .breakReset, .angry, .talk:
+        case .meet, .oneSession, .backToSleep, .breakReset, .angry, .stages:
             storyPage(page.rawValue)
         case .groups:
             VStack(spacing: 24) {
@@ -96,7 +96,7 @@ struct OnboardingView: View {
     private var buttons: some View {
         VStack(spacing: 12) {
             switch page {
-            case .meet, .oneSession, .backToSleep, .breakReset, .angry, .talk, .groups:
+            case .meet, .oneSession, .backToSleep, .breakReset, .angry, .stages, .groups:
                 primary(GolemVoice.continueButton) { advance(from: page) }
             case .notifications:
                 primary(GolemVoice.allowNotificationsButton) {

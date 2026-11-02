@@ -1,18 +1,15 @@
 import GolemKit
 import SwiftUI
 
-/// The main screen: the golem and how he feels, your groups, and, while a
-/// group is over its limit, the way to talk to him. Everything else
-/// (automations, blocking) is behind the gear in `SettingsView`.
+/// The main screen: the golem and how he feels, and your groups.
+/// Everything else (automations, blocking) is behind the gear in
+/// `SettingsView`.
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var talkingGroup: WatchGroup?
     @State private var isShowingSettings = false
     @State private var isShowingDebug = false
-    /// The debug menu asks for a talk; shown once that sheet is gone.
-    @State private var talkAfterDebug: WatchGroup?
 
     var body: some View {
         NavigationStack {
@@ -20,10 +17,6 @@ struct HomeView: View {
                 VStack(spacing: 16) {
                     GolemMood(isAngry: model.isGolemAwake)
                         .padding(.bottom, 8)
-
-                    ForEach(model.groupsOverLimit) { group in
-                        TalkCard(group: group, overBy: overByText(group)) { talkingGroup = group }
-                    }
 
                     groups
                 }
@@ -36,18 +29,9 @@ struct HomeView: View {
             .navigationDestination(isPresented: $isShowingSettings) {
                 SettingsView()
             }
-            .fullScreenCover(item: $talkingGroup) { group in
-                TalkView(group: group, overBy: overByText(group))
-            }
             #if DEBUG
-            .sheet(isPresented: $isShowingDebug, onDismiss: {
-                talkingGroup = talkAfterDebug
-                talkAfterDebug = nil
-            }) {
-                DebugMenu { group in
-                    talkAfterDebug = group
-                    isShowingDebug = false
-                }
+            .sheet(isPresented: $isShowingDebug) {
+                DebugMenu()
             }
             #endif
             .alert(
@@ -64,7 +48,7 @@ struct HomeView: View {
             await model.requestPermissions()
         }
         // While the golem rests, used time flows back by the second: re-read
-        // it so the cards, the talk cards and his mood keep up.
+        // it so the cards and his mood keep up.
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
@@ -73,27 +57,8 @@ struct HomeView: View {
         }
         .onChange(of: scenePhase, initial: true) {
             guard scenePhase == .active else { return }
-            Task {
-                await model.appBecameActive()
-                offerTalk()
-            }
+            Task { await model.appBecameActive() }
         }
-        // A tapped timer, notification or shield names its group.
-        .onChange(of: model.talkRequest) { offerTalk() }
-    }
-
-    /// After a tap on the timer, a notification or the shield: open the
-    /// conversation for that group. Nothing opens by itself otherwise.
-    private func offerTalk() {
-        if let group = model.takeGroupToTalk() {
-            talkingGroup = group
-        }
-    }
-
-    /// "1:24" while the group is over its limit, nil within it.
-    private func overByText(_ group: WatchGroup) -> String? {
-        let overBy = model.overBySeconds(of: group)
-        return overBy >= 1 ? TalkView.minutesSeconds(overBy) : nil
     }
 
     // MARK: Parts
@@ -153,35 +118,6 @@ private struct GolemMood: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(isAngry ? .red : Theme.ink)
         }
-    }
-}
-
-/// A group past its limit: the way to talk to the golem while its time
-/// flows back. Calm, not red, because he's asleep while you're here.
-private struct TalkCard: View {
-    let group: WatchGroup
-    let overBy: String?
-    let talk: () -> Void
-
-    var body: some View {
-        Button(action: talk) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(GolemVoice.talkCardTitle)
-                        .font(.headline)
-                    if let overBy {
-                        Text(GolemVoice.talkCardSubtitle(groupName: group.name, overBy: overBy))
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-            }
-            .foregroundStyle(Theme.ink)
-            .golemCard()
-        }
-        .buttonStyle(.plain)
     }
 }
 

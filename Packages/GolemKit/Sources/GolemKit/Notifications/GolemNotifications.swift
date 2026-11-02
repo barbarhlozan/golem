@@ -1,13 +1,12 @@
 import Foundation
 import UserNotifications
 
-/// Local notifications. Tapping any of them opens the app, which then
-/// opens the conversation with the golem. Each carries its group's ID
-/// (`groupID(of:)`), so the golem knows which group you came from.
+/// Local notifications (before iOS 26, where the Island can't pop open at
+/// the limit by itself). Tapping one opens the app. Each carries its
+/// group's ID (`groupID(of:)`).
 public enum GolemNotifications {
     private enum ID {
         static let timeUp = "timeUp"
-        static let talk = "talk"
     }
 
     private static let groupIDKey = "groupID"
@@ -36,18 +35,6 @@ public enum GolemNotifications {
     /// Called when you leave the group's apps before the time is up.
     public static func cancelTimeUp() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [ID.timeUp])
-    }
-
-    /// Sent when "Talk to the golem" is tapped on the shield.
-    /// Extensions can't open the app themselves, so this is the doorway.
-    public static func sendTalkInvitation() {
-        send(
-            id: ID.talk,
-            groupID: nil,
-            title: GolemVoice.talkNotificationTitle,
-            body: GolemVoice.talkNotificationBody,
-            at: .now
-        )
     }
 
     private static func send(id: String, groupID: UUID?, title: String, body: String, at date: Date) {

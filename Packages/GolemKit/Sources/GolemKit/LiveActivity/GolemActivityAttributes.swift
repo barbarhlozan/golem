@@ -9,7 +9,6 @@ import Foundation
 /// so one timer can be updated in place (e.g. switching a group's apps).
 public struct GolemActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable, Sendable {
-        /// Which group it is, so tapping the timer opens a talk about that group.
         public var groupID: UUID
         public var groupName: String
 
@@ -19,15 +18,19 @@ public struct GolemActivityAttributes: ActivityAttributes {
         /// When the group's time runs out.
         public var limitAt: Date
 
-        /// True if the time was already up when the timer appeared.
-        public var isOverLimit: Bool
+        /// How the golem is: waking (white), stirring (orange) or angry (red).
+        public var moment: GolemMoment
 
-        public init(groupID: UUID, groupName: String, startedAt: Date, limitAt: Date, isOverLimit: Bool) {
+        /// What he says in the expanded Island at this moment.
+        public var line: String
+
+        public init(groupID: UUID, groupName: String, startedAt: Date, limitAt: Date, moment: GolemMoment, line: String) {
             self.groupID = groupID
             self.groupName = groupName
             self.startedAt = startedAt
             self.limitAt = limitAt
-            self.isOverLimit = isOverLimit
+            self.moment = moment
+            self.line = line
         }
     }
 

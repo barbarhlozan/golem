@@ -4,20 +4,20 @@ An iOS app against doomscrolling. You sort your time-eating apps into
 **groups** you define yourself, e.g. *Reels* (Instagram, TikTok) and *Feeds*
 (X, Bluesky), or one group per app. When you open one, a timer starts in the
 **Dynamic Island**. Switching between apps of the same group keeps one timer
-going. When the group's time is up, the golem wakes up for real: the Island
-pops open and turns red, *"Why are you keeping me awake?"*, and stays red,
-counting how far over you are.
+going. The golem speaks up in stages: he wakes up when you open the app,
+stirs (orange) at 80% of your limit, and past it turns red and keeps asking
+why he's still awake, popping the Island open each time. His lines are
+written ahead by Apple's on-device model (iOS 26+), or hand-written where
+there isn't one.
 
 There's nothing to earn and nothing to plead for. Stay away from a group and
-its time flows back, a second for every second away. While you wait, you can
-talk to the golem: with Apple's on-device model (iOS 26+) he really answers,
-otherwise he grumbles back with his own lines.
+its time flows back, a second for every second away.
 
 ## Two flavours
 
 | Scheme      | What it does                                         | Needs                       |
 |-------------|------------------------------------------------------|-----------------------------|
-| `GolemLite` | Group timers, Dynamic Island, talking to the golem   | Free Apple account; Simulator works |
+| `GolemLite` | Group timers, Dynamic Island stages, the golem's lines | Free Apple account; Simulator works |
 | `Golem`     | All of that + Screen Time shields that block the apps | Paid Apple Developer Program, real iPhone |
 
 They share all their code (`Capabilities.screenTime` tells them apart) and
@@ -75,7 +75,6 @@ Golem/                      The app you open (both flavours)
   App/                      Entry point, GolemModel (state & actions), Capabilities
   Intents/                  Shortcuts actions: App Opened / App Closed
   Timing/                   What happens on open/close (timer, Island, notification)
-  Talk/                     The conversation with the golem (on-device AI or his own lines)
   Screens/                  SwiftUI screens
 Extensions/                 Small programs iOS runs on Golem's behalf
   Widgets/                  The Dynamic Island / Lock Screen timer
@@ -86,8 +85,8 @@ Packages/GolemKit/          Code shared by the app and all extensions
   Settings/                 Groups, settings, shared storage
   Timing/                   Group timers: open/close, resting (unit-tested)
   LiveActivity/             Starting/stopping the Dynamic Island timer
-  Voice/                    Every sentence the Golem says (and who he is, for the model)
-  Notifications/            "Time's up" and "talk to him" notifications
+  Voice/                    Every sentence the Golem says; his lines written ahead (LineBook, LineWriter)
+  Notifications/            "Time's up" notifications (before iOS 26)
   ScreenTime/               Thin wrappers around Apple's Screen Time APIs
 docs/                       How it works and why
 ```
@@ -97,7 +96,7 @@ docs/                       How it works and why
 | I want to…                         | Edit                                       |
 |------------------------------------|--------------------------------------------|
 | Change what the Golem says         | `GolemKit/Voice/GolemVoice.swift`          |
-| Change how he talks back           | `talkInstructions` in `GolemVoice.swift`, `Golem/Talk/` |
+| Change his lines / how the AI writes them | `GolemVoice.swift` (fallback lines, `writerInstructions`), `Voice/LineWriter.swift` |
 | Change how the timer counts        | `GolemKit/Timing/GroupSession.swift`       |
 | Add a new setting                  | `GolemKit/Settings/GolemSettings.swift`    |
 | Change the Dynamic Island look     | `Extensions/Widgets/GolemLiveActivity.swift` |

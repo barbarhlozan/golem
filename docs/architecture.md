@@ -14,7 +14,7 @@ information in two ways:
 
 | Piece                      | Framework         | Job                                                  |
 |----------------------------|-------------------|------------------------------------------------------|
-| Golem app                  | SwiftUI, FoundationModels | Groups, settings, setup guide, talking to the golem |
+| Golem app                  | SwiftUI           | Groups, settings, setup guide                        |
 | `AppOpenedIntent` / `AppClosedIntent` | AppIntents | Shortcuts actions; start/pause a group's timer |
 | `SessionCoordinator`       | —                 | On open/close: timer, Dynamic Island, pop-up at limit  |
 | `GolemWidgets`             | WidgetKit         | Draws the Dynamic Island / Lock Screen timer         |
@@ -31,10 +31,12 @@ information in two ways:
         ▼
  SessionCoordinator.appOpened
         │  SessionTracker: Reels starts/continues (other groups pause)
-        │  LiveTimer.show → Dynamic Island shows white eyes + mm:ss
-        │  (limit set as the stale date: iOS turns it red at the limit)
-        │  iOS 26+: red "pop-up" Live Activities are booked to start at the
-        │  limit and every 10 s after; older iOS: a "time's up" notification
+        │  LiveTimer.show → the timer starts: white eyes + mm:ss, and in the
+        │  moment iOS shows it large, his "waking" line (GolemLines)
+        │  iOS 26+: stages are booked to start by themselves, each popping
+        │  the Island open with a new line: orange at 80% of the limit, red
+        │  at the limit and at +1 and +2 min (5 Live Activities is the cap).
+        │  Older iOS: it turns red at the limit (stale date) + a notification
         ▼
  You switch to TikTok (same group)
         │  "closed" + "opened" arrive within a moment → one visit, timer keeps going
@@ -43,8 +45,6 @@ information in two ways:
         │  (older iOS: it turns red, plus the notification)
         │  Reopening the app past the limit pops it open again (and rebooks).
         │  It stays red, counting how far over you are. Nothing to earn.
-        │  Tapping it → Golem opens the conversation with him (TalkView):
-        │  on-device model if available (GolemBrain), else his own lines
         ▼
  You leave → the time flows back until you're under the limit again
 
@@ -54,9 +54,10 @@ information in two ways:
  Opening Golem stops every timer (no watched app can be open then).
  While you're away, used time flows back: a second for every second away.
 
- Tapping the timer (golem://talk/<group id>) or a notification (groupID in
- userInfo) opens the conversation about that group. SessionCoordinator handles
- events one at a time, so a late "opened" can't undo a "closed".
+ After each open/close (and whenever Golem is open), LineWriter tops up
+ the golem's lines with the on-device model: two batches per moment, the
+ spare taking over at 80% used. SessionCoordinator handles events one at
+ a time, so a late "opened" can't undo a "closed".
 ```
 
 The rules for counting (switching, resting) live in `GroupSession` and
@@ -71,7 +72,6 @@ are covered by unit tests.
  GolemMonitor → Shields.raise(group) + notification
         ▼
  Shield ── "Close app" ──▶ app closes, shield stays up
-        │ "Talk to the golem" → notification → the conversation
         ▼
  The shield lifts at midnight or when you stop blocking (see open questions)
 ```

@@ -2,7 +2,7 @@ import Foundation
 
 /// The golem's lines on the home screen and in the first run.
 ///
-/// Kept apart from `GolemVoice.swift` so the conversation's wording can be
+/// Kept apart from `GolemVoice.swift` so the Island's wording can be
 /// rewritten there without touching these (and vice versa).
 extension GolemVoice {
     // MARK: Home
@@ -35,8 +35,8 @@ extension GolemVoice {
              "Every second you stay out of the app gives a second back. Stay out as long as you were in, and you can wake the golem up fresh again."),
             ("Stay too long and it gets angry",
              "When you pass your limit, the Golem will interrupt you and ask why you're still there."),
-            ("Talk to the golem",
-             "Past your limit and waiting for your time to flow back? You can talk to the Golem. It listens, grumbles, and answers back."),
+            ("Orange, then red",
+             "Near your limit the Golem stirs and the Island turns orange. Past it, it turns red and the Golem keeps asking why you're still there."),
         ]
     }
 
@@ -44,7 +44,7 @@ extension GolemVoice {
     public static let groupsBody = "Apps in a group share one timer and one limit. Start with these, or rename them."
 
     public static let notificationsTitle = "He'll tell you"
-    public static let notificationsBody = "When your time is up, the Golem lets you know. Tap to talk to him."
+    public static let notificationsBody = "On older iPhones, the Golem sends a notification when your time is up."
     public static let allowNotificationsButton = "Allow notifications"
 
     public static let automationsTitle = "Let him watch"

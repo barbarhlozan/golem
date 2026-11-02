@@ -1,11 +1,7 @@
 import GolemKit
 import ManagedSettings
 
-/// Handles taps on the shield's buttons.
-///
-/// - Close app → leave the app.
-/// - Talk to the golem → send a notification that opens the conversation
-///   with him (extensions can't open the app directly); the shield stays up.
+/// Handles taps on the shield's only button: Close app.
 final class GolemShieldAction: ShieldActionDelegate {
     override func handle(
         action: ShieldAction,
@@ -31,16 +27,8 @@ final class GolemShieldAction: ShieldActionDelegate {
         completionHandler(respond(to: action))
     }
 
+    /// The shield only has "Close app".
     private func respond(to action: ShieldAction) -> ShieldActionResponse {
-        switch action {
-        case .primaryButtonPressed:
-            return .close
-        case .secondaryButtonPressed:
-            GolemNotifications.sendTalkInvitation()
-            return .defer
-        default:
-            // Golem's shield has no submenu items (newer iOS versions allow them).
-            return .close
-        }
+        .close
     }
 }

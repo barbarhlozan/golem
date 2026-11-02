@@ -16,6 +16,7 @@ public struct SharedStore: Sendable {
         static let settings = "settings"
         static let sessions = "sessions"
         static let shieldedGroupIDs = "shieldedGroupIDs"
+        static let lineBook = "lineBook"
     }
 
     private let suiteName: String
@@ -46,6 +47,12 @@ public struct SharedStore: Sendable {
     public var sessions: [UUID: GroupSession] {
         get { decoded([UUID: GroupSession].self, forKey: Key.sessions) ?? [:] }
         nonmutating set { encode(newValue, forKey: Key.sessions) }
+    }
+
+    /// The golem's lines written ahead for the Dynamic Island (`GolemLines`).
+    public var lineBook: LineBook {
+        get { decoded(LineBook.self, forKey: Key.lineBook) ?? LineBook() }
+        nonmutating set { encode(newValue, forKey: Key.lineBook) }
     }
 
     /// Groups whose apps are currently covered by the Screen Time shield.

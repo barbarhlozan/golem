@@ -26,6 +26,9 @@ struct AppOpenedIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         await SessionCoordinator.appOpened(groupID: group.id)
+        // Golem's code gets to run now: top up the golem's lines (after the
+        // timer, so the Island never waits for them).
+        await LineWriter.writeMissing()
         return .result()
     }
 }
@@ -47,6 +50,7 @@ struct AppClosedIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         await SessionCoordinator.appClosed(groupID: group.id)
+        await LineWriter.writeMissing()
         return .result()
     }
 }

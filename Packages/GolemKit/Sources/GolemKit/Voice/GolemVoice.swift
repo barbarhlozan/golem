@@ -4,9 +4,9 @@ import Foundation
 /// can be rewritten without hunting through screens and extensions.
 ///
 /// The character: the golem wants to sleep. Scrolling wakes him up and
-/// makes him watch over you. Within your limit he puts up with it; past it
-/// he's grumpy. Nothing has to be earned from him: while your time flows
-/// back you can simply talk to him, and he talks back.
+/// makes him watch over you. Within your limit he puts up with it; near it
+/// he stirs, and past it he's grumpy and keeps asking why he's awake.
+/// Nothing has to be earned from him: leave, and your time flows back.
 public enum GolemVoice {
     // MARK: Shield screen (full build)
 
@@ -19,93 +19,76 @@ public enum GolemVoice {
     }
 
     public static let closeButton = "Close app"
-    public static let talkButton = "Talk to the golem"
 
-    // MARK: Notifications
+    // MARK: Notifications (before iOS 26)
 
     public static let limitReachedTitle = "The Golem is awake. And grumpy."
 
     public static func limitReachedBody(groupName: String, minutes: Int) -> String {
-        "\(minutes) min of \(groupName) and he still can't sleep. Tap to talk to him."
+        "\(minutes) min of \(groupName) and he still can't sleep."
     }
-
-    public static let talkNotificationTitle = "The Golem is listening"
-    public static let talkNotificationBody = "Tap to talk to him while your time flows back."
 
     // MARK: Live timer
 
-    // Past the limit he speaks for himself here, like in the conversation.
-
-    public static let islandQuestion = "Why are you keeping me awake?"
-
     /// The alert's text where there's no Dynamic Island (e.g. Apple Watch).
     public static func islandAlertBody(groupName: String) -> String {
-        "Your \(groupName) time is up. Tap to talk to me."
+        "Your \(groupName) time is up."
     }
 
-    // MARK: Home screen
-
-    /// The card on the home screen while a group is over its limit.
-    public static let talkCardTitle = "Talk to the golem"
-
-    public static func talkCardSubtitle(groupName: String, overBy: String) -> String {
-        "\(groupName): \(overBy) over your limit"
-    }
-
-    // MARK: Conversation
+    // MARK: His lines in the Island
     //
-    // Here the golem speaks for himself ("I"), because you're talking to him
-    // face to face. So does the Island past the limit. Everywhere else
-    // he's "he".
+    // In the Island he speaks for himself ("I"). The lines come from
+    // `GolemLines`: written ahead by the on-device model where there is
+    // one, otherwise these hand-written ones.
 
-    /// His first words when the conversation opens.
-    public static func talkOpening(groupName: String, overBy: String?) -> String {
-        guard let overBy else {
-            return "You woke me for \(groupName). Fine. What's on your mind?"
+    /// The hand-written lines for each moment, used when there's no
+    /// on-device model or its lines haven't been written yet.
+    public static func fallbackLines(_ moment: GolemMoment) -> [String] {
+        switch moment {
+        case .waking:
+            [
+                "Mm. I'm up. I'm watching.",
+                "You opened it again. I'm awake now.",
+                "One eye open. Go on.",
+                "I was dreaming of the river. Fine.",
+                "Awake. Briefly, I hope.",
+            ]
+        case .stirring:
+            [
+                "Almost time. I'm getting restless.",
+                "Nearly your limit. Start wrapping up.",
+                "My eyes are getting heavy. Are yours?",
+                "A minute or so left. I'm counting.",
+                "I'm stirring. Don't make me stand up.",
+            ]
+        case .angry:
+            [
+                "Why are you keeping me awake?",
+                "Past your limit. I'm still here.",
+                "I should be asleep. So should your thumb.",
+                "Every second here is one I don't sleep.",
+                "Put it down. Let us both rest.",
+                "Still scrolling? I'm still watching.",
+            ]
         }
-        return "You kept me up \(overBy) past your \(groupName) limit. I'm awake now. Talk, while your time flows back."
     }
 
-    public static let talkPlaceholder = "Say something…"
-    public static let talkSendButton = "Send"
-    public static let talkThinking = "…"
-    public static let talkSleepButton = "Sleep well"
-
-    /// Under the conversation: how long until the group is back under its limit.
-    public static func talkBackUnder(in time: String) -> String {
-        "Back under your limit in \(time)"
-    }
-
-    public static let talkBackUnderNow = "You're back under your limit."
-
-    /// What the on-device model is told about who it is. The facts change
-    /// with each conversation; the character doesn't.
-    public static func talkInstructions(groupName: String, limitMinutes: Int, overBy: String?) -> String {
-        let situation = overBy.map {
-            "They are \($0) past their \(limitMinutes)-minute limit for \(groupName). Their time flows back one second for every second they stay away."
-        } ?? "They opened \(groupName), which woke you, but they're still within their \(limitMinutes)-minute limit."
-
-        return """
-        You are the Golem, an old clay golem from Prague who guards this person's attention. \
-        You want to sleep. Every time they scroll \(groupName), you're woken up and must watch over them. \
-        \(situation)
-        Speak as "I". Reply in one to three short sentences. Be dry, a little grumpy and sleepy, but you \
-        care about them. Ask them simple questions about their day or what's pulling them in. Nudge them \
-        to put the phone down and do something away from screens, but never lecture or moralise. \
-        Never mention being an AI, a model or an app. Reply in the language they write in.
+    /// What the on-device model is asked for: a batch of short lines for
+    /// one moment, in the golem's voice.
+    public static let writerInstructions = """
+        You are the Golem, an old clay golem from Prague who guards a person's attention. \
+        You want to sleep, but every time they open a social media app you wake up and must watch them scroll. \
+        You write very short lines that appear in the iPhone's Dynamic Island. \
+        Each line is at most 8 words, spoken as "I", dry, sleepy and a little grumpy, but caring. \
+        Never lecture, never use hashtags or emoji, never mention being an AI or an app.
         """
-    }
 
-    /// His replies when there's no on-device model (older iPhones, Apple
-    /// Intelligence off). Picked in turn, so they don't repeat right away.
-    public static let talkFallbackReplies = [
-        "Hm.",
-        "I hear you. My eyes are still open.",
-        "Every second you stay away, I get one back.",
-        "Put it down. Look at something far away.",
-        "Tell me something that isn't on a screen.",
-        "I was dreaming of the river. Go outside, it's still there.",
-        "Grumble. Go on.",
-        "Then rest. Both of us.",
-    ]
+    public static func writerPrompt(_ moment: GolemMoment, count: Int) -> String {
+        let moment = switch moment {
+        case .waking: "they just opened the app and woke you up; you start watching"
+        case .stirring: "they are close to their time limit; you're getting restless"
+        case .angry: "they are past their time limit and still scrolling; you're annoyed and want to know why you're kept awake"
+        }
+        return "Write \(count) different lines for this moment: \(moment)."
+    }
 }

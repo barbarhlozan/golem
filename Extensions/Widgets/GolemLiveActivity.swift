@@ -9,84 +9,103 @@ import WidgetKit
 /// when the time runs out. Collapsed, the Island is a single slim line:
 /// eyes on the left, timer on the right.
 ///
-/// Within the limit the golem is only watching: white eyes, and a
-/// long-press shows the group, the time so far and a bar filling up to
-/// the limit. Past it he's awake and angry: red eyes, a red timer counting
-/// on, and, expanded, his question in place of the bar. `LiveTimer` makes
-/// the Island pop open at that moment.
+/// The golem's mood is in the colour, and his line is in the expanded view
+/// (shown when a stage pops the Island open, or on a long-press):
+/// - waking: white, a calm timer and a bar filling up to the limit
+/// - stirring: orange, near the limit
+/// - angry: red, past the limit, the timer counting on
+/// `LiveTimer` books the stages and their lines.
 ///
 /// The Lock Screen gets the same line. It rarely shows, because you're
-/// not scrolling while the phone is locked.
-///
-/// Tapping it opens a talk with the golem about its group (`DeepLink`).
+/// not scrolling while the phone is locked. Tapping it opens Golem.
 struct GolemLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GolemActivityAttributes.self) { context in
-            LockScreenTimer(state: context.state, isAngry: isAngry(context))
+            LockScreenTimer(state: context.state, mood: Mood(context))
                 .padding()
-                .widgetURL(DeepLink.talk(groupID: context.state.groupID))
         } dynamicIsland: { context in
-            let angry = isAngry(context)
+            let mood = Mood(context)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 6) {
-                        GolemEyes(isAngry: angry)
+                        GolemEyes(color: mood.color)
                         Text(context.state.groupName)
                             .font(.headline)
-                            .foregroundStyle(angry ? .red : .white)
+                            .foregroundStyle(mood.color)
                             .lineLimit(1)
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    TimerText(state: context.state, isAngry: angry, width: 64)
+                    TimerText(state: context.state, mood: mood, width: 64)
                         .font(.headline.monospacedDigit())
                 }
-                // The slots beside the camera are narrow, so the bar and the
-                // golem's question go in the space below.
+                // The slots beside the camera are narrow, so his line (and,
+                // while he's calm, the bar) go in the space below.
                 DynamicIslandExpandedRegion(.bottom) {
-                    if angry {
-                        Text(GolemVoice.islandQuestion)
+                    VStack(spacing: 8) {
+                        Text(mood.line(context.state))
                             .font(.system(.title3, design: .serif).weight(.semibold))
-                            .foregroundStyle(.red)
+                            .foregroundStyle(mood.color)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
-                    } else {
-                        LimitBar(state: context.state)
+                        if mood == .waking {
+                            LimitBar(state: context.state)
+                        }
                     }
                 }
             } compactLeading: {
                 // Inset so both eyes clear the Island's rounded end.
-                GolemEyes(isAngry: angry)
+                GolemEyes(color: mood.color)
                     .padding(.leading, 6)
             } compactTrailing: {
-                TimerText(state: context.state, isAngry: angry)
+                TimerText(state: context.state, mood: mood)
                     .font(.system(size: 15, weight: .semibold).monospacedDigit())
             } minimal: {
-                GolemEyes(isAngry: angry)
+                GolemEyes(color: mood.color)
             }
-            .keylineTint(angry ? .red : nil)
-            .widgetURL(DeepLink.talk(groupID: context.state.groupID))
+            .keylineTint(mood == .waking ? nil : mood.color)
+        }
+    }
+}
+
+/// How the golem is right now, and how that looks.
+private enum Mood {
+    case waking, stirring, angry
+
+    init(_ context: ActivityViewContext<GolemActivityAttributes>) {
+        switch context.state.moment {
+        // Where the stages can't be booked (older iOS), iOS marks the calm
+        // timer stale at the limit: he's angry from then on.
+        case .waking: self = context.isStale ? .angry : .waking
+        case .stirring: self = .stirring
+        case .angry: self = .angry
         }
     }
 
-    /// Over the limit: either already when the timer appeared, or since
-    /// iOS marked it stale at the limit.
-    private func isAngry(_ context: ActivityViewContext<GolemActivityAttributes>) -> Bool {
-        context.state.isOverLimit || context.isStale
+    var color: Color {
+        switch self {
+        case .waking: .white
+        case .stirring: .orange
+        case .angry: .red
+        }
+    }
+
+    /// His line; a calm timer gone stale has no angry line of its own.
+    func line(_ state: GolemActivityAttributes.ContentState) -> String {
+        self == .angry && state.moment == .waking
+            ? GolemVoice.fallbackLines(.angry)[0]
+            : state.line
     }
 }
 
 /// The golem's eyes. Uses the "GolemEye" image from this extension's asset
 /// catalog when it's there, otherwise the SF Symbol `eye.fill`.
-/// White while he's watching, red once he's angry.
 private struct GolemEyes: View {
-    let isAngry: Bool
-    /// The calm colour: white on the black Island, `.primary` on the Lock Screen.
-    var calmColor: Color = .white
+    let color: Color
 
     var body: some View {
         icon
-            .foregroundStyle(isAngry ? .red : calmColor)
+            .foregroundStyle(color)
     }
 
     @ViewBuilder
@@ -104,31 +123,31 @@ private struct GolemEyes: View {
     }
 }
 
-/// mm:ss counting up. Within the limit it's calm and stops at the limit;
-/// once angry it turns red and keeps counting past it.
+/// mm:ss counting up. Before the limit it stops at the limit; once he's
+/// angry it keeps counting past it.
 ///
 /// Timer texts are greedy and would stretch the Island, so the width is
 /// fixed to fit "00:00" and the digits hug the right edge.
 private struct TimerText: View {
     let state: GolemActivityAttributes.ContentState
-    let isAngry: Bool
+    let mood: Mood
     var width: CGFloat = 46
-    var calmColor: Color = .white
+    /// The calm colour, for the Lock Screen's light background.
+    var calmColor: Color?
 
     var body: some View {
         timer
+            .foregroundStyle(mood == .waking ? (calmColor ?? mood.color) : mood.color)
             .multilineTextAlignment(.trailing)
             .frame(width: width, alignment: .trailing)
     }
 
     @ViewBuilder
     private var timer: some View {
-        if isAngry {
+        if mood == .angry {
             Text(state.startedAt, style: .timer)
-                .foregroundStyle(.red)
         } else {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
-                .foregroundStyle(calmColor)
         }
     }
 }
@@ -145,22 +164,21 @@ private struct LimitBar: View {
         }
         .tint(.white)
         .padding(.horizontal, 8)
-        .padding(.top, 4)
     }
 }
 
 /// One line on the Lock Screen, only while you're in a group's apps.
 private struct LockScreenTimer: View {
     let state: GolemActivityAttributes.ContentState
-    let isAngry: Bool
+    let mood: Mood
 
     var body: some View {
         HStack {
-            GolemEyes(isAngry: isAngry, calmColor: .primary)
+            GolemEyes(color: mood == .waking ? .primary : mood.color)
             Text(state.groupName)
                 .font(.headline)
             Spacer()
-            TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
+            TimerText(state: state, mood: mood, width: 80, calmColor: .primary)
                 .font(.title2.monospacedDigit())
         }
     }

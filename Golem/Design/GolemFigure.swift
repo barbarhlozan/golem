@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The hand-drawn golem from the app icon, for empty states and the talk
-/// screen. The drawing is in `Design/golem.png`; the asset catalog holds a
+/// The hand-drawn golem from the app icon, for the home screen and
+/// the first run. The drawing is in `Design/golem.png`; the asset catalog holds a
 /// copy with a transparent background.
 ///
 /// `isAsleep` shows the "GolemAsleep" drawing (eyes closed) once it's in the

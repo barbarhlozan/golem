@@ -281,7 +281,29 @@ the timer again, along with any pop-ups booked for the limit, and each new
 visit's timer drops down large for a moment before settling into the slim
 line. Switching between a group's apps still keeps and updates one timer.
 
+## 19. No chat; the golem speaks in stages, with AI-written lines (2026-11-02)
+
+The chat with the golem (decision 17) didn't serve a purpose in use, so it's
+gone, along with its home card, `golem://talk` links and the shield's
+"Talk to the golem" button. Instead the golem speaks up in the Island in
+stages, each popping it open (an alert) with a new line: waking (white) as
+the timer starts, stirring (orange) at 80% of the limit, angry (red) at the
+limit and at +1 and +2 minutes. They're separate Live Activities booked to
+start by themselves (iOS 26+); 5 is iOS's cap, so the timer, one orange and
+three red. The pop-up only stays large for a few seconds; no app can keep
+it expanded.
+
+His lines are written ahead by Apple's on-device model (`LineWriter`) in
+two batches per moment (`LineBook`): pop-ups take from the current batch,
+so they're instant; at 80% used the spare takes over and a new one is
+written whenever Golem's code next runs (after each app open/close, or with
+Golem open). Hand-written lines fill in until then, and on phones without
+Apple Intelligence.
+
 ## Open questions
+
+- Does iOS let the on-device model write lines in the background (during
+  the automations)? If not, the batches only refill while Golem is open.
 
 - Full build: without pleading, a group's Screen Time shield stays up until
   midnight (or until blocking is stopped). Should it lift on its own once

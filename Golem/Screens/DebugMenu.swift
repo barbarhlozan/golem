@@ -5,8 +5,6 @@ import SwiftUI
 /// Debug builds only: every state the app can be in, one tap away.
 /// Behind the ladybug on the home screen, so the real screens stay clean.
 struct DebugMenu: View {
-    /// Close this menu and open the talk with the golem for a group.
-    let showTalk: (WatchGroup) -> Void
 
     @Environment(GolemModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -41,7 +39,6 @@ struct DebugMenu: View {
                         Button("Open in 4 s (go to another app)") { model.debugOpenLater(group) }
                         Button("Put 20 s before the limit") { model.debugPutNearLimit(group) }
                         Button("Put over the limit") { model.debugPutOverLimit(group) }
-                        Button("Talk to the golem now") { showTalk(group) }
                         Button("Send time's-up in 5 s") { model.debugSendTimeUp(group) }
                     }
                 }
