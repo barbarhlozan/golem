@@ -29,9 +29,10 @@ struct GolemMood: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
 
-            // Always takes one line's room and digits keep their width, so
-            // the rows below stay put as the time ticks and the mood changes.
-            Text(detail)
+            // Always takes one line's room (even when there's nothing to say)
+            // and digits keep their width, so the rows below stay put as the
+            // time ticks and the mood changes.
+            Text(detail ?? " ")
                 .font(.body.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -95,19 +96,20 @@ struct GolemMood: View {
         }
     }
 
-    private var detail: String {
+    /// Only a time, or nothing: asleep, he needs no explanation.
+    private var detail: String? {
         switch phase {
         case .keepingWatch:
             return GolemVoice.homeKeepingWatchDetail
         case .asleep:
-            return model.hasSeenAnApp ? GolemVoice.homeAsleepDetail : GolemVoice.homeUnseenDetail
+            return model.hasSeenAnApp ? nil : GolemVoice.homeUnseenDetail
         case .restless, .settling:
-            guard let focus else { return GolemVoice.homeAsleepDetail }
+            guard let focus else { return nil }
             if focus.moment == .angry {
                 let overBy = focus.usedSeconds - TimeInterval(focus.group.limitMinutes * 60)
-                return GolemVoice.homeRumblingDetail(group: focus.group.name, time: overBy.minutesSeconds)
+                return GolemVoice.homeRumblingDetail(time: overBy.minutesSeconds)
             }
-            return GolemVoice.homeSettlingDetail(group: focus.group.name, time: focus.usedSeconds.minutesSeconds)
+            return GolemVoice.homeSettlingDetail(time: focus.usedSeconds.minutesSeconds)
         }
     }
 }

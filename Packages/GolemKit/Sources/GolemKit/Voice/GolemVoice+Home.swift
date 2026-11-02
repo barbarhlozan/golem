@@ -9,23 +9,22 @@ extension GolemVoice {
 
     public static let homeTitle = "Golem"
 
-    // The big line under the golem, and the smaller one under it. He's an
-    // old, majestic creature, not a baby having a nap: short, grave lines.
-    // Each detail stays one short line, so the rows below don't jump.
-    public static let homeAsleep = "The Golem sleeps."
-    public static let homeAsleepDetail = "Do not wake him."
+    // The big line under the golem: what he's doing right now, so it's in
+    // the present continuous. Under it, only a time when there is one:
+    // asleep, he needs no explanation.
+    public static let homeAsleep = "The Golem is sleeping."
     /// Time flowing back, every group within its limit.
-    public static let homeSettling = "The Golem settles."
+    public static let homeSettling = "The Golem is settling."
     /// Time flowing back, a group still past its limit.
-    public static let homeRumbling = "The Golem rumbles."
-    public static func homeSettlingDetail(group: String, time: String) -> String {
-        "\(group): \(time) until he sleeps"
+    public static let homeRumbling = "The Golem is rumbling."
+    public static func homeSettlingDetail(time: String) -> String {
+        "\(time) until he falls asleep"
     }
-    public static func homeRumblingDetail(group: String, time: String) -> String {
-        "\(group): \(time) until he quiets"
+    public static func homeRumblingDetail(time: String) -> String {
+        "\(time) until he calms down"
     }
     /// Full build: a Screen Time shield keeps him up.
-    public static let homeKeepingWatch = "The Golem keeps watch."
+    public static let homeKeepingWatch = "The Golem is keeping watch."
     public static let homeKeepingWatchDetail = "Until midnight."
 
     /// Until any automation has told Golem an app opened.
@@ -38,7 +37,6 @@ extension GolemVoice {
         "\(minutes) min limit"
     }
 
-    public static let groupFresh = "Fresh"
     /// While the golem rests and the used time flows back.
     public static func groupResting(time: String) -> String {
         "Resting, \(time) to go"
@@ -47,16 +45,7 @@ extension GolemVoice {
         "Over the limit, \(time) to go"
     }
 
-    public static func groupToday(visits: Int, longest: String) -> String {
-        switch visits {
-        case 0: "No visits today"
-        case 1: "Today: one visit, \(longest)"
-        default: "Today: \(visits) visits, longest \(longest)"
-        }
-    }
-
     public static let newGroupButton = "New group"
-
 
     // MARK: First run
 

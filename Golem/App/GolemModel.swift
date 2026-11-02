@@ -97,11 +97,6 @@ final class GolemModel {
         groupsOverLimit.contains { $0.id == group.id }
     }
 
-    /// The group's visits today and the longest one (`DayLog`).
-    func todaysVisits(of group: WatchGroup) -> DayLog.Entry {
-        store.dayLog.entry(for: group.id, at: refreshedAt)
-    }
-
     /// False until an automation (or the debug menu) has told Golem an app
     /// opened, so the home screen can point to the setup guide.
     var hasSeenAnApp: Bool {

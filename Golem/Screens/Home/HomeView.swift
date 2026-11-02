@@ -77,8 +77,7 @@ struct HomeView: View {
                     GroupRow(
                         group: group,
                         usedSeconds: model.usedSeconds(of: group),
-                        isOverLimit: model.isOverLimit(group),
-                        today: model.todaysVisits(of: group)
+                        isOverLimit: model.isOverLimit(group)
                     )
                 }
                 .buttonStyle(.plain)
