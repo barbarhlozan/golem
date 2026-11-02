@@ -84,8 +84,9 @@ public enum GolemVoice {
         count == 1 ? "1 more letter" : "\(count) more letters"
     }
 
+    /// On the home screen, for a group past its limit: tap to wake him and plead.
     public static func overLimitTitle(groupName: String) -> String {
-        "\(groupName): he wants to sleep"
+        "Explain why you want to keep watching \(groupName)"
     }
 
     public static func grantButton(minutes: Int) -> String {

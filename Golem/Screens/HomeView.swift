@@ -18,7 +18,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    GolemMood(isAngry: !model.groupsNeedingPlea.isEmpty)
+                    GolemMood(isAngry: model.isGolemAwake)
                         .padding(.bottom, 8)
 
                     ForEach(model.groupsNeedingPlea) { group in
@@ -141,8 +141,8 @@ struct HomeView: View {
     }
 }
 
-/// The golem and one line on how he feels: asleep while every group is
-/// within its limit, angry once one is over.
+/// The golem and one line on how he feels: asleep, unless a Screen Time
+/// shield keeps him up (`GolemModel.isGolemAwake`).
 private struct GolemMood: View {
     let isAngry: Bool
 
@@ -157,7 +157,8 @@ private struct GolemMood: View {
     }
 }
 
-/// "Reels: he wants to sleep — Plead with the Golem", in red.
+/// A group past its limit: the way to wake the golem and plead for more.
+/// Calm, not red, because he's asleep while you're here.
 private struct PleaCard: View {
     let group: WatchGroup
     let plead: () -> Void
@@ -165,18 +166,14 @@ private struct PleaCard: View {
     var body: some View {
         Button(action: plead) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(GolemVoice.overLimitTitle(groupName: group.name))
-                        .font(.headline)
-                    Text(GolemVoice.pleadButton)
-                        .font(.subheadline)
-                }
+                Text(GolemVoice.overLimitTitle(groupName: group.name))
+                    .font(.headline)
+                    .multilineTextAlignment(.leading)
                 Spacer()
                 Image(systemName: "chevron.right")
             }
-            .foregroundStyle(.red)
-            .padding(16)
-            .background(.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .foregroundStyle(Theme.ink)
+            .golemCard()
         }
         .buttonStyle(.plain)
     }

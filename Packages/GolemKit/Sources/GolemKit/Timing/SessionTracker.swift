@@ -87,4 +87,15 @@ public struct SessionTracker: Sendable {
             (sessions[$0.id]?.lastOpenedAt ?? .distantPast) > (sessions[$1.id]?.lastOpenedAt ?? .distantPast)
         }
     }
+
+    /// Groups over their limit that you left just now: you came to Golem
+    /// straight from scrolling past it. Later on he's asleep (resting), so
+    /// opening Golem then shouldn't drag you into a plea again.
+    public func groupsJustLeftOverLimit(at now: Date, within seconds: TimeInterval = 10) -> [WatchGroup] {
+        let sessions = store.sessions
+        return groupsOverLimit(at: now).filter { group in
+            guard let closed = sessions[group.id]?.lastClosedAt else { return false }
+            return now.timeIntervalSince(closed) < seconds
+        }
+    }
 }
