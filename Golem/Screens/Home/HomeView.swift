@@ -16,12 +16,19 @@ struct HomeView: View {
 
     @State private var isShowingSettings = false
     @State private var isShowingSetupGuide = false
+    // Heights for centring the content when it fits (`topMargin`). They're
+    // the screen's and the rows' own, which moving the content doesn't
+    // change, so measuring can't loop.
+    @State private var screenHeight: CGFloat = 0
+    @State private var moodHeight: CGFloat = 0
+    @State private var rowHeights: [UUID: CGFloat] = [:]
 
     var body: some View {
         NavigationStack {
             List {
                 GolemMood(isShowingSetupGuide: $isShowingSetupGuide)
                     .frame(maxWidth: .infinity)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { moodHeight = $0 }
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
@@ -30,6 +37,8 @@ struct HomeView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .contentMargins(.top, topMargin, for: .scrollContent)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
             .background(Theme.night)
             // No visible title: the golem is the heading. The title is still
             // set, so screens pushed from here get "‹ Golem" as their back
@@ -90,6 +99,7 @@ struct HomeView: View {
                 usedSeconds: model.usedSeconds(of: group),
                 isOverLimit: model.isOverLimit(group)
             )
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[group.id] = $0 }
             .background {
                 NavigationLink {
                     GroupEditView(group: $group)
@@ -108,6 +118,14 @@ struct HomeView: View {
             let ids = offsets.map { model.settings.groups[$0].id }
             ids.forEach(model.deleteGroup(id:))
         }
+    }
+
+    /// When everything fits, half the free room goes above it, so it sits
+    /// in the middle instead of leaving the bottom empty. A little less
+    /// than half: optical centre sits slightly above the real one.
+    private var topMargin: CGFloat {
+        let content = moodHeight + 16 + model.settings.groups.reduce(0) { $0 + (rowHeights[$1.id] ?? 0) }
+        return max(0, (screenHeight - content) / 2 - 40)
     }
 
     @ToolbarContentBuilder
