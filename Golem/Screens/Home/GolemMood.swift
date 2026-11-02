@@ -19,7 +19,7 @@ struct GolemMood: View {
                 .font(.custom(Theme.headingFontName, size: 48, relativeTo: .largeTitle))
                 .fontDesign(nil)
 
-            LivingGolem(phase: phase, glow: glow)
+            LivingGolem(phase: phase, isWarm: moment != .waking, wokenAt: model.wokenFromAppAt)
                 .padding(.vertical, 8)
 
             Text(line)
@@ -84,8 +84,6 @@ struct GolemMood: View {
 
     private var color: Color { Theme.color(for: moment) }
 
-    /// Torchlight behind him, only while he's orange or red.
-    private var glow: Color? { moment == .waking ? nil : color }
 
     private var line: String {
         switch phase {

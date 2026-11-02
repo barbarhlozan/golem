@@ -59,13 +59,16 @@ public enum SessionCoordinator {
 
     /// Stops whatever is running. Used when Golem itself is in front,
     /// so no watched app can be. It also catches "closed" events that
-    /// never came.
-    public static func stopAll(reason: String, at now: Date = .now) async {
+    /// never came. Returns whether a timer was running.
+    @discardableResult
+    public static func stopAll(reason: String, at now: Date = .now) async -> Bool {
+        var didStop = false
         await serially {
-            let didStop = SessionTracker().stopAll(at: now)
+            didStop = SessionTracker().stopAll(at: now)
             logger.info("Stop all (\(reason)): \(didStop ? "stopped" : "nothing was running")")
             await clearTimer()
         }
+        return didStop
     }
 
     private static func clearTimer() async {

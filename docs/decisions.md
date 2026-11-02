@@ -337,6 +337,29 @@ hand-written lines and the on-device model's instructions changed. Lines
 already written in the old voice are thrown away (`LineBook.currentVoice`)
 and rewritten next time Golem's code runs.
 
+## 22. The golem moves in the owner's own frames (2026-11-02)
+
+Moving the drawing in code broke the hand-drawn look (entry 20), so the
+owner drew short loops instead, and code only picks which frame to show.
+
+- A five-frame loop per state, at 12 fps: asleep (eyes closed), settling
+  (half-open) and restless (wide open; keeping watch uses it too). The
+  lines are redrawn every frame, so he "boils" gently even when still.
+- Between states his eyes open or close through five wake-up frames. Each
+  loop shares a frame with them, and a loop only lets go at that frame, so
+  nothing cuts (`GolemReel`, tested in GolemKit). The last wake-up frame
+  is never shown: the restless loop stands in for it.
+- Coming straight from a watched app (Golem stopped a running timer), he's
+  shown wide awake for one loop, then settles into his state.
+- Sparks rise beside him while he's red (6) or orange (3): copies of three
+  hand-drawn embers, each flying up through its own tile, at random spots
+  behind him. The torchlight glow from entry 20 was dropped: the sparks
+  say it.
+- He's 30% smaller (182 pt), so the sparks have room.
+- The drawings are kept as drawn in `Design/frames`;
+  `Design/make-frames.sh` cuts them out onto one shared box, so he never
+  jumps. Reduce Motion holds a still frame, without sparks.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during
