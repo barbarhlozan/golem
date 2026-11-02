@@ -26,9 +26,7 @@ struct AppOpenedIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         await SessionCoordinator.appOpened(groupID: group.id)
-        // Golem's code gets to run now: top up the golem's lines (after the
-        // timer, so the Island never waits for them).
-        await LineWriter.writeMissing()
+        topUpLinesLater()
         return .result()
     }
 }
@@ -50,7 +48,16 @@ struct AppClosedIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         await SessionCoordinator.appClosed(groupID: group.id)
-        await LineWriter.writeMissing()
+        topUpLinesLater()
         return .result()
     }
+}
+
+/// Golem's code gets to run now, so top up the golem's lines, but without
+/// making Shortcuts wait: the on-device model can take several seconds,
+/// and an action that takes too long fails with "an unknown error
+/// occurred". If iOS suspends Golem before the lines are written, they're
+/// written next time.
+private func topUpLinesLater() {
+    Task { @MainActor in await LineWriter.writeMissing() }
 }
