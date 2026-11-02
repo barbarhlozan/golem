@@ -300,6 +300,33 @@ written whenever Golem's code next runs (after each app open/close, or with
 Golem open). Hand-written lines fill in until then, and on phones without
 Apple Intelligence.
 
+## 20. Home: the golem in his dungeon, a ledger of groups (2026-11-02)
+
+The owner wanted home "more polished, and purposeful". Of three sketches
+(tidy, ledger, golem first) they picked a mix of golem first and ledger.
+
+- Home is black in both modes (`Theme.night`), as if he slept in a
+  dungeon; the cream paper stays for the other screens, though screens
+  pushed from home are shown in dark mode so they don't flash back to it.
+- A big blackletter "Golem" title, the golem big, and two lines in a grave
+  voice for an old, majestic creature (not a napping baby): "The Golem
+  sleeps. / Do not wake him.", "The Golem settles. / Feeds: 4:55 until he
+  sleeps", "The Golem rumbles. / Reels: 0:33 until he quiets". The small
+  line is always one line, so the rows below never jump.
+- The colour follows the Island's stages for the group that worries him
+  most (`GolemMoment(usedSeconds:limitSeconds:)`): what you'd walk back
+  into now. White, orange from 80%, red past the limit, with faint
+  torchlight behind him; it steps down as the time flows back. The golem
+  himself stays white: tinting the drawing read like a filter.
+- Groups are ruled rows, not cards: name, limit, status ("Resting, 1:15 to
+  go") and today's visits and the longest one (`DayLog`, reset at
+  midnight). No progress bars, here or in the Island: the time says it.
+- Only the gear stays in the toolbar; the debug menu moved to Settings.
+- Until an app has been seen opening, he points to the automations.
+- Moving the drawing in code (breathing, a shudder, a drifting "z") was
+  tried and dropped: it broke the hand-drawn look. Each phase will get
+  the owner's own short animation instead.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during

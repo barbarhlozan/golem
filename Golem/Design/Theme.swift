@@ -1,3 +1,4 @@
+import GolemKit
 import SwiftUI
 import UIKit
 
@@ -16,6 +17,19 @@ enum Theme {
     static let paper = Color("Paper")
     /// Rows and cards sitting on the paper.
     static let card = Color("Card")
+    /// The home screen's background: black in both modes, as if the golem
+    /// slept in a dungeon, so the white figure is the one thing that glows.
+    static let night = Color("Night")
+
+    /// The Island's colour for a moment (white, orange, red), so the home
+    /// screen and the Island speak the same language. White is ink here.
+    static func color(for moment: GolemMoment) -> Color {
+        switch moment {
+        case .waking: ink
+        case .stirring: .orange
+        case .angry: .red
+        }
+    }
 
     // MARK: Type
 

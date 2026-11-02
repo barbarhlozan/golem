@@ -3,7 +3,7 @@ import GolemKit
 import SwiftUI
 
 /// Debug builds only: every state the app can be in, one tap away.
-/// Behind the ladybug on the home screen, so the real screens stay clean.
+/// At the bottom of Settings, so the real screens stay clean.
 struct DebugMenu: View {
 
     @Environment(GolemModel.self) private var model
