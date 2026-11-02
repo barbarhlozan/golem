@@ -98,3 +98,13 @@ struct LineBookVoiceTests {
         #expect(GolemLines.next(.waking, store: store) == "The golem woke up.")
     }
 }
+
+struct GolemNameTests {
+    @Test func everyHandWrittenLineCallsHimTheGolem() {
+        for moment in GolemMoment.allCases {
+            for line in GolemVoice.fallbackLines(moment) {
+                #expect(line.localizedCaseInsensitiveContains("golem"), "\(line)")
+            }
+        }
+    }
+}

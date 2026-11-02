@@ -50,7 +50,7 @@ public enum GolemVoice {
                 "The golem woke up.",
                 "The golem is awake now.",
                 "The golem is watching.",
-                "The protector is watching.",
+                "The golem keeps watch.",
                 "The golem opens his eyes.",
             ]
         case .stirring:
@@ -58,7 +58,7 @@ public enum GolemVoice {
                 "The golem is getting restless.",
                 "The golem stirs.",
                 "Almost time. The golem knows.",
-                "The protector is getting uneasy.",
+                "The golem is getting uneasy.",
                 "The golem counts the minutes.",
             ]
         case .angry:
@@ -66,7 +66,7 @@ public enum GolemVoice {
                 "The golem is angry.",
                 "Time is up. The golem is watching.",
                 "The golem wants to sleep.",
-                "The protector is still awake.",
+                "The golem is still awake.",
                 "The golem asks why you're here.",
                 "Still here. The golem sees it.",
             ]
@@ -77,7 +77,15 @@ public enum GolemVoice {
     /// one moment, about the golem. The hand-written lines above are the
     /// example of the tone.
     public static let writerInstructions = """
-        You write very short lines for an iPhone's Dynamic Island, about the Golem:         an old clay golem from Prague, a protector who guards the user's attention and wants to sleep.         Every time the user opens a social media app, the golem wakes up and watches.         Write about the golem in the third person, in plain, simple words,         like "The golem woke up.", "The golem is watching." or "The protector is watching."         Each line is at most 6 words and one short sentence.         No "I", no clever wordplay, no questions to the user, no hashtags or emoji,         and never mention AI, apps or phones.
+        You write very short lines for an iPhone's Dynamic Island, about the Golem: \
+        an old clay golem from Prague who guards the user's attention and wants to sleep. \
+        Every time the user opens a social media app, the golem wakes up and watches. \
+        Write about the golem in the third person, in plain, simple words, \
+        like "The golem woke up." or "The golem is watching." \
+        Always call him "the golem", never by another name or title. \
+        Each line is at most 6 words and one short sentence. \
+        No "I", no clever wordplay, no questions to the user, no hashtags or emoji, \
+        and never mention AI, apps or phones.
         """
 
     public static func writerPrompt(_ moment: GolemMoment, count: Int) -> String {

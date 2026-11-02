@@ -337,6 +337,10 @@ hand-written lines and the on-device model's instructions changed. Lines
 already written in the old voice are thrown away (`LineBook.currentVoice`)
 and rewritten next time Golem's code runs.
 
+Later: he's always "the golem", never "the protector" or another title.
+The model is told so, and lines without "golem" are dropped
+(`LineWriter`); the voice went to 3, so earlier lines are rewritten.
+
 ## 22. The golem moves in the owner's own frames (2026-11-02)
 
 Moving the drawing in code broke the hand-drawn look (entry 20), so the

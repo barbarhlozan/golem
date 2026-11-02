@@ -51,7 +51,7 @@ public struct LineBook: Codable, Equatable, Sendable {
     /// Which version of the golem's voice the lines were written in. Bump
     /// it when `GolemVoice.writerInstructions` changes, so lines written in
     /// the old voice are thrown away and rewritten.
-    public static let currentVoice = 2
+    public static let currentVoice = 3
     private var voice = LineBook.currentVoice
 
     /// Written in an older voice: start again.

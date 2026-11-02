@@ -59,6 +59,8 @@ public enum LineWriter {
         return response.content.lines
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines.union(["\""])) }
             .filter { !$0.isEmpty && $0.count <= 45 }
+            // He's always "the golem", never "the protector" or similar.
+            .filter { $0.localizedCaseInsensitiveContains("golem") }
     }
 
     private static let logger = Logger(subsystem: "cz.hlozanek.golem", category: "Lines")
