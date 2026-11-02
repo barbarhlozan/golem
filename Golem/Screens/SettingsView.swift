@@ -2,9 +2,11 @@ import GolemKit
 import SwiftUI
 
 /// Everything that isn't needed every day: the automation guide and
-/// (full build) Screen Time blocking.
+/// (full build) Screen Time blocking. Debug builds add the debug menu at
+/// the bottom, so the home screen keeps a single button.
 struct SettingsView: View {
     @Environment(GolemModel.self) private var model
+    @State private var isShowingDebug = false
 
     var body: some View {
         Form {
@@ -19,9 +21,20 @@ struct SettingsView: View {
             if Capabilities.screenTime {
                 screenTimeSection
             }
+
+            #if DEBUG
+            Section {
+                Button("Debug menu", systemImage: "ladybug") { isShowingDebug = true }
+            }
+            #endif
         }
         .golemBackground()
         .navigationTitle("Settings")
+        #if DEBUG
+        .sheet(isPresented: $isShowingDebug) {
+            DebugMenu()
+        }
+        #endif
     }
 
     @ViewBuilder

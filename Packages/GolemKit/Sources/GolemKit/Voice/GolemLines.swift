@@ -10,6 +10,24 @@ public enum GolemMoment: String, Codable, CaseIterable, Sendable {
     case angry
 }
 
+extension GolemMoment {
+    /// When the golem starts stirring, as a share of the limit.
+    public static let stirringShare = 0.8
+
+    /// The moment for this much used time: what the Island would show if
+    /// you went back to the group's apps now. The home screen takes its
+    /// colour from it, so it calms down as the time flows back.
+    public init(usedSeconds: TimeInterval, limitSeconds: TimeInterval) {
+        if usedSeconds >= limitSeconds {
+            self = .angry
+        } else if usedSeconds >= limitSeconds * Self.stirringShare {
+            self = .stirring
+        } else {
+            self = .waking
+        }
+    }
+}
+
 /// The golem's lines for each moment, written ahead so a pop-up never has
 /// to wait for them.
 ///

@@ -17,6 +17,7 @@ public struct SharedStore: Sendable {
         static let sessions = "sessions"
         static let shieldedGroupIDs = "shieldedGroupIDs"
         static let lineBook = "lineBook"
+        static let dayLog = "dayLog"
     }
 
     private let suiteName: String
@@ -47,6 +48,12 @@ public struct SharedStore: Sendable {
     public var sessions: [UUID: GroupSession] {
         get { decoded([UUID: GroupSession].self, forKey: Key.sessions) ?? [:] }
         nonmutating set { encode(newValue, forKey: Key.sessions) }
+    }
+
+    /// Today's visits per group, for the home screen.
+    public var dayLog: DayLog {
+        get { decoded(DayLog.self, forKey: Key.dayLog) ?? DayLog() }
+        nonmutating set { encode(newValue, forKey: Key.dayLog) }
     }
 
     /// The golem's lines written ahead for the Dynamic Island (`GolemLines`).

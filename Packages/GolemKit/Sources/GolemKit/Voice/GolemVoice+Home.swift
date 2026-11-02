@@ -7,16 +7,55 @@ import Foundation
 extension GolemVoice {
     // MARK: Home
 
-    public static let homeAsleep = "He's asleep. Keep it that way."
-    public static let homeAngry = "He's awake, and he's not happy."
-    public static let groupRested = "Rested"
+    public static let homeTitle = "Golem"
 
-    public static func groupUsage(used: String, limitMinutes: Int) -> String {
-        "\(used) of \(limitMinutes) min"
+    // The big line under the golem, and the smaller one under it. He's an
+    // old, majestic creature, not a baby having a nap: short, grave lines.
+    // Each detail stays one short line, so the rows below don't jump.
+    public static let homeAsleep = "The Golem sleeps."
+    public static let homeAsleepDetail = "Do not wake him."
+    /// Time flowing back, every group within its limit.
+    public static let homeSettling = "The Golem settles."
+    /// Time flowing back, a group still past its limit.
+    public static let homeRumbling = "The Golem rumbles."
+    public static func homeSettlingDetail(group: String, time: String) -> String {
+        "\(group): \(time) until he sleeps"
+    }
+    public static func homeRumblingDetail(group: String, time: String) -> String {
+        "\(group): \(time) until he quiets"
+    }
+    /// Full build: a Screen Time shield keeps him up.
+    public static let homeKeepingWatch = "The Golem keeps watch."
+    public static let homeKeepingWatchDetail = "Until midnight."
+
+    /// Until any automation has told Golem an app opened.
+    public static let homeUnseenDetail = "He has not yet seen an app open."
+    public static let homeSetUpButton = "Set up automations"
+
+    // MARK: Group rows
+
+    public static func groupLimit(minutes: Int) -> String {
+        "\(minutes) min limit"
     }
 
-    /// Under a group's bar while the golem rests and the time flows back.
-    public static let groupResting = "Resting"
+    public static let groupFresh = "Fresh"
+    /// While the golem rests and the used time flows back.
+    public static func groupResting(time: String) -> String {
+        "Resting, \(time) to go"
+    }
+    public static func groupOverLimit(time: String) -> String {
+        "Over the limit, \(time) to go"
+    }
+
+    public static func groupToday(visits: Int, longest: String) -> String {
+        switch visits {
+        case 0: "No visits today"
+        case 1: "Today: one visit, \(longest)"
+        default: "Today: \(visits) visits, longest \(longest)"
+        }
+    }
+
+    public static let newGroupButton = "New group"
 
 
     // MARK: First run

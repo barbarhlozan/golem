@@ -42,16 +42,11 @@ struct GolemLiveActivity: Widget {
                 // The slots beside the camera are narrow, so his line (and,
                 // while he's calm, the bar) go in the space below.
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(spacing: 8) {
-                        Text(mood.line(context.state))
-                            .font(.system(.title3, design: .serif).weight(.semibold))
-                            .foregroundStyle(mood.color)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                        if mood == .waking {
-                            LimitBar(state: context.state)
-                        }
-                    }
+                    Text(mood.line(context.state))
+                        .font(.system(.title3, design: .serif).weight(.semibold))
+                        .foregroundStyle(mood.color)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                 }
             } compactLeading: {
                 // Inset so both eyes clear the Island's rounded end.
@@ -149,21 +144,6 @@ private struct TimerText: View {
         } else {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
         }
-    }
-}
-
-/// A thin bar filling up towards the limit. iOS animates it on its own.
-private struct LimitBar: View {
-    let state: GolemActivityAttributes.ContentState
-
-    var body: some View {
-        ProgressView(timerInterval: state.startedAt...state.limitAt, countsDown: false) {
-            EmptyView()
-        } currentValueLabel: {
-            EmptyView()
-        }
-        .tint(.white)
-        .padding(.horizontal, 8)
     }
 }
 

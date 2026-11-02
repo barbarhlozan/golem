@@ -15,15 +15,23 @@ public struct SessionTracker: Sendable {
     @discardableResult
     public func appOpened(groupID: UUID, at now: Date) -> GroupSession {
         var sessions = store.sessions
+        var log = store.dayLog
         for id in sessions.keys where id != groupID {
-            sessions[id]?.appClosed(at: now)
+            let start = sessions[id]?.runningSince
+            if sessions[id]?.appClosed(at: now) == true, let start {
+                log.visitEnded(groupID: id, lasting: now.timeIntervalSince(start), at: now)
+            }
         }
 
         var session = sessions[groupID] ?? GroupSession()
+        if !session.isRunning {
+            log.visitStarted(groupID: groupID, at: now)
+        }
         session.appOpened(at: now)
         sessions[groupID] = session
 
         store.sessions = sessions
+        store.dayLog = log
         return session
     }
 
@@ -31,8 +39,12 @@ public struct SessionTracker: Sendable {
     @discardableResult
     public func appClosed(groupID: UUID, at now: Date) -> Bool {
         guard var session = store.sessions[groupID] else { return false }
+        let start = session.runningSince
         let didStop = session.appClosed(at: now)
         store.sessions[groupID] = session
+        if didStop, let start {
+            store.dayLog.visitEnded(groupID: groupID, lasting: now.timeIntervalSince(start), at: now)
+        }
         return didStop
     }
 
@@ -41,11 +53,17 @@ public struct SessionTracker: Sendable {
     @discardableResult
     public func stopAll(at now: Date) -> Bool {
         var sessions = store.sessions
+        var log = store.dayLog
         var didStop = false
         for id in sessions.keys {
-            if sessions[id]?.stop(at: now) == true { didStop = true }
+            let start = sessions[id]?.runningSince
+            if sessions[id]?.stop(at: now) == true, let start {
+                log.visitEnded(groupID: id, lasting: now.timeIntervalSince(start), at: now)
+                didStop = true
+            }
         }
         store.sessions = sessions
+        store.dayLog = log
         return didStop
     }
 

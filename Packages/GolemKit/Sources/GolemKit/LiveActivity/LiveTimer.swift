@@ -39,7 +39,7 @@ public enum LiveTimer {
     private typealias Timer = Activity<GolemActivityAttributes>
 
     /// When the golem starts stirring, as a share of the limit.
-    static let stirringAt = 0.8
+    static let stirringAt = GolemMoment.stirringShare
 
     /// How often he asks again once you're past the limit.
     static let angryInterval: TimeInterval = 60
