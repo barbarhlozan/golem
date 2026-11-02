@@ -5,13 +5,13 @@ import OSLog
 
 /// Shows and hides the Golem's timer in the Dynamic Island.
 ///
-/// One timer stays alive between visits. When you leave the apps it turns
-/// empty ("away") instead of ending, and when you come back it's updated.
-/// That's because iOS shows a timer *started* from the background in its
-/// large form for a moment, dropping down over the screen; an update
-/// without an alert just widens the Island to the sides. Only the very
-/// first visit (or one after iOS ended the timer, at most 8 hours later)
-/// starts a new one.
+/// The timer exists only while you're in a group's apps: leaving ends it,
+/// so nothing lingers on the Lock Screen or in the background. The cost:
+/// iOS shows a timer *started* from the background in its large form for a
+/// moment, so each visit's Island drops down briefly before settling into
+/// the slim line. (Keeping one empty timer alive between visits avoided
+/// that, but left the golem on the Lock Screen all day; see decision 18.)
+/// Switching between a group's apps keeps the same timer and updates it.
 ///
 /// Within the limit the golem is only watching: a calm timer, no fuss.
 /// At the limit he wakes up properly and the Island pops open with his
@@ -53,14 +53,12 @@ public enum LiveTimer {
         }
     }
 
-    /// You've left the apps: cancel the booked pop-ups and empty the timer.
+    /// You've left the apps: end the timer and cancel the booked pop-ups.
     public static func hide() async {
-        guard let timer = await keepOne(alsoKeeping: []), !timer.content.state.isAway else { return }
-        var away = timer.content.state
-        away.isAway = true
-        away.isOverLimit = false
-        await timer.update(ActivityContent(state: away, staleDate: nil))
-        logger.info("Timer away")
+        for activity in Activity<GolemActivityAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+        logger.info("Timer ended")
     }
 
     // MARK: Within the limit
@@ -150,8 +148,8 @@ public enum LiveTimer {
         return timer
     }
 
-    /// The first visit, or iOS ended the old timer: start a new one. This
-    /// is the moment iOS shows it large when you're in another app.
+    /// A new visit: start a new timer. This is the moment iOS shows it
+    /// large for a moment when you're in another app.
     @discardableResult
     private static func start(_ content: ActivityContent<State>) -> Activity<GolemActivityAttributes>? {
         guard canShow else { return nil }

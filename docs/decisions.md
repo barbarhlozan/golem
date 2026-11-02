@@ -269,6 +269,18 @@ leaves the phone. Without it he replies with hand-written lines
 the full build the shield now only lifts at midnight or when blocking is
 stopped (an open question below).
 
+## 18. The timer ends when you leave, after all (2026-11-02)
+
+Reverses decision 16. Keeping one empty timer alive between visits did stop
+the Island from dropping down on each visit, but the golem then stayed on
+the Lock Screen all day ("The Golem is asleep.") and felt like he was
+running in the background, which the owner didn't want. iOS gives no way
+to have both: a running Live Activity always shows on the Lock Screen, and
+Golem's code doesn't run later to end it. So leaving a group's apps ends
+the timer again, along with any pop-ups booked for the limit, and each new
+visit's timer drops down large for a moment before settling into the slim
+line. Switching between a group's apps still keeps and updates one timer.
+
 ## Open questions
 
 - Full build: without pleading, a group's Screen Time shield stays up until
