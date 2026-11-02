@@ -47,7 +47,8 @@ information in two ways:
         ▼
  Granted: the group gets `grantedMinutes` more, counted from now
 
- You close the app → AppClosedIntent: timer pauses, Island disappears.
+ You close the app → AppClosedIntent: timer pauses, Island goes empty
+ (the timer stays alive, so the next visit only widens the Island).
  Opening Golem stops every timer (no watched app can be open then).
  While you're away, used time flows back: a second for every second away.
 

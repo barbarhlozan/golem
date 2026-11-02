@@ -233,20 +233,24 @@ so he's resting, and the time is flowing back.
 - Opening Golem goes straight to the plea only when you've just left a
   group past its limit (within 10 s), or tapped the timer or a notification.
 
-## 16. A new timer starts slim (2026-11-02)
+## 16. One timer stays alive, so opening an app doesn't drop the Island down (2026-11-02)
 
-When the automation starts the timer while you're in another app, iOS
-shows it in its large (expanded) form for a moment. Golem doesn't ask for
-that and can't turn it off: Golem has no setting for it, and Golem has to
-start a new timer each time (a timer kept running between visits would
-stay in the Island while you're doing other things).
+When the automation *starts* a Live Activity while you're in another app,
+iOS shows it in its large form for a moment, dropping down over the screen.
+Apps can't turn that off, and iOS sets that form's height: showing only
+eyes and time in it (tried first) left it just as tall. An *update* without
+an alert doesn't do that; the Island only widens to the sides.
 
-What Golem decides is what that large form contains. For its first 5 s
-the timer is marked `isStarting`, and its large form is only the slim
-line: eyes and time, no group name or bar, so it widens instead of
-dropping down. "App Opened" waits those 5 s, then clears the mark, so a
-long-press shows the group and the bar again. The pop-ups past the limit
-stay large on purpose.
+So Golem keeps one timer alive between visits. Leaving the apps empties it
+("away": nothing on either side of the camera, so the Island looks almost
+as usual) instead of ending it, and opening one updates it. Only the first
+visit, or one after iOS ended the timer (at most 8 hours), starts a new one
+and still drops down once. The group is in the changing data now, so the
+one timer can switch groups.
+
+Costs: the empty timer stays on the Lock Screen ("The Golem is asleep."),
+and the Island is a few points wider than normal while you're away. The
+pop-ups past the limit stay large on purpose.
 
 ## Open questions
 

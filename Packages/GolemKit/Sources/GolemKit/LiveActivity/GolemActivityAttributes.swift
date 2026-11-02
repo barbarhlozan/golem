@@ -4,8 +4,16 @@ import Foundation
 
 /// What the Dynamic Island / Lock Screen timer needs to draw itself.
 /// Shared by the app (which starts it) and the widget extension (which draws it).
+///
+/// Everything lives in the changing `ContentState`, the group included:
+/// Golem keeps one timer alive between visits and only updates it (see
+/// `LiveTimer`), so it must be able to switch groups.
 public struct GolemActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable, Sendable {
+        /// Which group it is, so tapping the timer opens that group's plea.
+        public var groupID: UUID
+        public var groupName: String
+
         /// When the timer would have shown 0:00 (now minus time already used).
         public var startedAt: Date
 
@@ -15,27 +23,19 @@ public struct GolemActivityAttributes: ActivityAttributes {
         /// True if the time was already up when the timer appeared.
         public var isOverLimit: Bool
 
-        /// True for the first few seconds. iOS shows a timer started from the
-        /// background in its large form for a moment; while this is set,
-        /// that form is just the slim line (eyes and time), so it doesn't
-        /// drop down over the screen. See `LiveTimer.settle`.
-        public var isStarting: Bool
+        /// You've left the apps: the timer stays alive but shows nothing.
+        public var isAway: Bool
 
-        public init(startedAt: Date, limitAt: Date, isOverLimit: Bool, isStarting: Bool = false) {
+        public init(groupID: UUID, groupName: String, startedAt: Date, limitAt: Date, isOverLimit: Bool, isAway: Bool = false) {
+            self.groupID = groupID
+            self.groupName = groupName
             self.startedAt = startedAt
             self.limitAt = limitAt
             self.isOverLimit = isOverLimit
-            self.isStarting = isStarting
+            self.isAway = isAway
         }
     }
 
-    /// Which group it is, so tapping the timer opens that group's plea.
-    public var groupID: UUID
-    public var groupName: String
-
-    public init(groupID: UUID, groupName: String) {
-        self.groupID = groupID
-        self.groupName = groupName
-    }
+    public init() {}
 }
 #endif

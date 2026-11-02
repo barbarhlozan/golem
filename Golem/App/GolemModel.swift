@@ -174,8 +174,6 @@ final class GolemModel {
 
     func simulateAppOpened(in group: WatchGroup) async {
         await SessionCoordinator.appOpened(groupID: group.id)
-        // Started while Golem is in front, so iOS doesn't show it large.
-        await SessionCoordinator.settleTimer(groupID: group.id)
         refresh()
     }
 

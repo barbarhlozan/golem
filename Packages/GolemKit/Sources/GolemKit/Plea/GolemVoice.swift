@@ -37,6 +37,9 @@ public enum GolemVoice {
 
     public static let islandQuestion = "Why are you keeping me awake?"
 
+    /// On the Lock Screen between visits, when the timer has nothing to show.
+    public static let lockScreenAsleep = "The Golem is asleep."
+
     /// The alert's text where there's no Dynamic Island (e.g. Apple Watch).
     public static func islandAlertBody(groupName: String) -> String {
         "Your \(groupName) time is up. Tap to answer."

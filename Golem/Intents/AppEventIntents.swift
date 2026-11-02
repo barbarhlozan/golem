@@ -26,12 +26,6 @@ struct AppOpenedIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         await SessionCoordinator.appOpened(groupID: group.id)
-        // Golem only runs while this action does, so it waits here until
-        // iOS has shown the new timer, then brings back its details.
-        #if os(iOS)
-        try? await Task.sleep(for: .seconds(LiveTimer.startingSeconds))
-        #endif
-        await SessionCoordinator.settleTimer(groupID: group.id)
         return .result()
     }
 }
