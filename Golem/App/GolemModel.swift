@@ -29,6 +29,11 @@ final class GolemModel {
     /// and he's asleep, resting, even if a group is still over its limit.
     private(set) var isGolemAwake = false
 
+    /// When you last came to Golem straight from a watched app (its timer
+    /// was still running), so the home screen can show him waking and
+    /// settling back down.
+    private(set) var wokenFromAppAt: Date?
+
     /// The last thing that went wrong, shown to the user.
     var errorMessage: String?
 
@@ -63,7 +68,9 @@ final class GolemModel {
     /// Golem is in front, so none of the watched apps can be: stop any
     /// timer still running. This catches "closed" events that never came.
     func appBecameActive() async {
-        await SessionCoordinator.stopAll(reason: "Golem opened")
+        if await SessionCoordinator.stopAll(reason: "Golem opened") {
+            wokenFromAppAt = .now
+        }
         refresh()
         // In front, the on-device model is surely allowed to run.
         await LineWriter.writeMissing(store: store)
