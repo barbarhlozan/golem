@@ -38,6 +38,7 @@ struct DebugMenu: View {
 
                 ForEach(model.settings.groups) { group in
                     Section(group.name) {
+                        Button("Open in 4 s (go to another app)") { model.debugOpenLater(group) }
                         Button("Put 20 s before the limit") { model.debugPutNearLimit(group) }
                         Button("Put over the limit") { model.debugPutOverLimit(group) }
                         Button("Talk to the golem now") { showTalk(group) }

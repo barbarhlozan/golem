@@ -233,7 +233,26 @@ so he's resting, and the time is flowing back.
 - Opening Golem goes straight to the plea only when you've just left a
   group past its limit (within 10 s), or tapped the timer or a notification.
 
-## 16. No pleading; you can talk to the golem instead (2026-11-02)
+## 16. One timer stays alive, so opening an app doesn't drop the Island down (2026-11-02)
+
+When the automation *starts* a Live Activity while you're in another app,
+iOS shows it in its large form for a moment, dropping down over the screen.
+Apps can't turn that off, and iOS sets that form's height: showing only
+eyes and time in it (tried first) left it just as tall. An *update* without
+an alert doesn't do that; the Island only widens to the sides.
+
+So Golem keeps one timer alive between visits. Leaving the apps empties it
+("away": nothing on either side of the camera, so the Island looks almost
+as usual) instead of ending it, and opening one updates it. Only the first
+visit, or one after iOS ended the timer (at most 8 hours), starts a new one
+and still drops down once. The group is in the changing data now, so the
+one timer can switch groups.
+
+Costs: the empty timer stays on the Lock Screen ("The Golem is asleep."),
+and the Island is a few points wider than normal while you're away. The
+pop-ups past the limit stay large on purpose.
+
+## 17. No pleading; you can talk to the golem instead (2026-11-02)
 
 In use, the golem's presence did the job: the red, still-counting timer in
 the Island kept the time in mind, while the plea (wait, write a reason,
@@ -262,7 +281,3 @@ stopped (an open question below).
   because an app may hold only 5 Live Activities, until you reopen the app.
   Push updates from a server (paid account) could pop the Island open every
   10 s for as long as needed.
-- The Island briefly opens wide when the timer starts while you're in
-  another app. Golem doesn't ask for that; it looks like iOS announcing a
-  Live Activity started from the background (the automation's "Notify When
-  Run" is off). Is there a way to start it straight into the slim line?

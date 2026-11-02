@@ -11,9 +11,12 @@ import WidgetKit
 ///
 /// Within the limit the golem is only watching: white eyes, and a
 /// long-press shows the group, the time so far and a bar filling up to
-/// the limit. Past it he's awake and angry: red eyes, a red timer counting on,
-/// and, expanded, his question in place of the bar. `LiveTimer` makes the
-/// Island pop open at that moment.
+/// the limit. Past it he's awake and angry: red eyes, a red timer counting
+/// on, and, expanded, his question in place of the bar. `LiveTimer` makes
+/// the Island pop open at that moment.
+///
+/// While you're away the timer stays alive but empty, so the Island looks
+/// as if it weren't there (see `LiveTimer` for why).
 ///
 /// The Lock Screen gets the same line. It rarely shows, because you're
 /// not scrolling while the phone is locked.
@@ -22,33 +25,36 @@ import WidgetKit
 struct GolemLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GolemActivityAttributes.self) { context in
-            LockScreenTimer(
-                groupName: context.attributes.groupName,
-                state: context.state,
-                isAngry: isAngry(context)
-            )
-            .padding()
-            .widgetURL(DeepLink.talk(groupID: context.attributes.groupID))
+            LockScreenTimer(state: context.state, isAngry: isAngry(context))
+                .padding()
+                .widgetURL(DeepLink.talk(groupID: context.state.groupID))
         } dynamicIsland: { context in
             let angry = isAngry(context)
+            let away = context.state.isAway
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: 6) {
-                        GolemEyes(isAngry: angry)
-                        Text(context.attributes.groupName)
-                            .font(.headline)
-                            .foregroundStyle(angry ? .red : .white)
-                            .lineLimit(1)
+                    if !away {
+                        HStack(spacing: 6) {
+                            GolemEyes(isAngry: angry)
+                            Text(context.state.groupName)
+                                .font(.headline)
+                                .foregroundStyle(angry ? .red : .white)
+                                .lineLimit(1)
+                        }
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    TimerText(state: context.state, isAngry: angry, width: 64)
-                        .font(.headline.monospacedDigit())
+                    if !away {
+                        TimerText(state: context.state, isAngry: angry, width: 64)
+                            .font(.headline.monospacedDigit())
+                    }
                 }
                 // The slots beside the camera are narrow, so the bar and the
                 // golem's question go in the space below.
                 DynamicIslandExpandedRegion(.bottom) {
-                    if angry {
+                    if away {
+                        EmptyView()
+                    } else if angry {
                         Text(GolemVoice.islandQuestion)
                             .font(.system(.title3, design: .serif).weight(.semibold))
                             .foregroundStyle(.red)
@@ -59,24 +65,30 @@ struct GolemLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                // Inset so both eyes clear the Island's rounded end.
-                GolemEyes(isAngry: angry)
-                    .padding(.leading, 6)
+                if !away {
+                    // Inset so both eyes clear the Island's rounded end.
+                    GolemEyes(isAngry: angry)
+                        .padding(.leading, 6)
+                }
             } compactTrailing: {
-                TimerText(state: context.state, isAngry: angry)
-                    .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                if !away {
+                    TimerText(state: context.state, isAngry: angry)
+                        .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                }
             } minimal: {
-                GolemEyes(isAngry: angry)
+                if !away {
+                    GolemEyes(isAngry: angry)
+                }
             }
             .keylineTint(angry ? .red : nil)
-            .widgetURL(DeepLink.talk(groupID: context.attributes.groupID))
+            .widgetURL(DeepLink.talk(groupID: context.state.groupID))
         }
     }
 
     /// Over the limit: either already when the timer appeared, or since
     /// iOS marked it stale at the limit.
     private func isAngry(_ context: ActivityViewContext<GolemActivityAttributes>) -> Bool {
-        context.state.isOverLimit || context.isStale
+        !context.state.isAway && (context.state.isOverLimit || context.isStale)
     }
 }
 
@@ -153,19 +165,27 @@ private struct LimitBar: View {
     }
 }
 
+/// One line on the Lock Screen. While you're away the timer stays alive
+/// (see `LiveTimer`), so it says he's asleep instead.
 private struct LockScreenTimer: View {
-    let groupName: String
     let state: GolemActivityAttributes.ContentState
     let isAngry: Bool
 
     var body: some View {
         HStack {
-            GolemEyes(isAngry: isAngry, calmColor: .primary)
-            Text(groupName)
-                .font(.headline)
-            Spacer()
-            TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
-                .font(.title2.monospacedDigit())
+            if state.isAway {
+                Text(GolemVoice.lockScreenAsleep)
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            } else {
+                GolemEyes(isAngry: isAngry, calmColor: .primary)
+                Text(state.groupName)
+                    .font(.headline)
+                Spacer()
+                TimerText(state: state, isAngry: isAngry, width: 80, calmColor: .primary)
+                    .font(.title2.monospacedDigit())
+            }
         }
     }
 }

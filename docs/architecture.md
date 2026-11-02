@@ -48,7 +48,8 @@ information in two ways:
         ▼
  You leave → the time flows back until you're under the limit again
 
- You close the app → AppClosedIntent: timer pauses, Island disappears.
+ You close the app → AppClosedIntent: timer pauses, Island goes empty
+ (the timer stays alive, so the next visit only widens the Island).
  Opening Golem stops every timer (no watched app can be open then).
  While you're away, used time flows back: a second for every second away.
 

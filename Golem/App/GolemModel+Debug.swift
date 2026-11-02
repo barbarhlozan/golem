@@ -1,6 +1,7 @@
 #if DEBUG
 import Foundation
 import GolemKit
+import UIKit
 
 /// Shortcuts to states that are slow to reach by hand, for the debug menu.
 /// Debug builds only.
@@ -25,6 +26,19 @@ extension GolemModel {
         session.stop(at: now)
         store.sessions[group.id] = session
         refresh()
+    }
+
+    /// "Open" a few seconds later, so you can be in another app by then,
+    /// like when the automation runs. Only updates a timer that's already
+    /// there: iOS lets an app start one from the background only through
+    /// a Shortcuts action.
+    func debugOpenLater(_ group: WatchGroup, in seconds: TimeInterval = 4) {
+        let task = UIApplication.shared.beginBackgroundTask()
+        Task {
+            try? await Task.sleep(for: .seconds(seconds))
+            await simulateAppOpened(in: group)
+            UIApplication.shared.endBackgroundTask(task)
+        }
     }
 
     func debugResetTimers() {
