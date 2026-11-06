@@ -379,6 +379,14 @@ off; the golem is the heading), and the groups are a real `List`: rows highlight
 tapped and swipe left to delete. The rows keep their own arrow next to the
 limit, so the list's built-in one is hidden.
 
+## 24. A shared Island shows the timer, not the eyes (2026-11-06)
+
+When another app has a Live Activity too (music, a call, a ride), iOS
+shows the golem in its tiny "minimal" slot. That slot used to hold his
+eyes, so the timer disappeared exactly when you were scrolling with
+music on. Now it holds a small timer instead; its colour still carries
+his mood. The slot is only about 40 points wide, so the digits are small.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during

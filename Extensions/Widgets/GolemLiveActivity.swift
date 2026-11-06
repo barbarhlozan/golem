@@ -7,7 +7,9 @@ import WidgetKit
 ///
 /// iOS ticks the timer by itself; the app only says when it started and
 /// when the time runs out. Collapsed, the Island is a single slim line:
-/// eyes on the left, timer on the right.
+/// eyes on the left, timer on the right. When another app shares the
+/// Island, iOS gives him only a tiny "minimal" slot, and that shows the
+/// timer alone.
 ///
 /// The golem's mood is in the colour, and his line is in the expanded view
 /// (shown when a stage pops the Island open, or on a long-press):
@@ -56,7 +58,14 @@ struct GolemLiveActivity: Widget {
                 TimerText(state: context.state, mood: mood)
                     .font(.system(size: 15, weight: .semibold).monospacedDigit())
             } minimal: {
-                GolemEyes(color: mood.color)
+                // When another app also has a Live Activity (music, a
+                // call), iOS shrinks the golem to this tiny slot. The
+                // timer matters more than his face there; the colour
+                // still tells his mood.
+                TimerText(state: context.state, mood: mood, width: 40)
+                    .font(.system(size: 12, weight: .semibold).monospacedDigit())
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
             }
             .keylineTint(mood == .waking ? nil : mood.color)
         }
