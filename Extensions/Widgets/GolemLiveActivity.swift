@@ -62,10 +62,7 @@ struct GolemLiveActivity: Widget {
                 // call), iOS shrinks the golem to this tiny slot. The
                 // timer matters more than his face there; the colour
                 // still tells his mood.
-                TimerText(state: context.state, mood: mood, width: 40)
-                    .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(1)
+                MinimalTimer(state: context.state, mood: mood)
             }
             .keylineTint(mood == .waking ? nil : mood.color)
         }
@@ -153,6 +150,31 @@ private struct TimerText: View {
         } else {
             Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
         }
+    }
+}
+
+/// The timer in the tiny round slot iOS gives him when another app shares
+/// the Island. It fills the slot and shrinks to fit, so even "12:34" is
+/// never cut off, and stays centred. (A short "11s" / "3m" isn't possible:
+/// only iOS can tick a timer while you scroll, and it ticks as m:ss.)
+private struct MinimalTimer: View {
+    let state: GolemActivityAttributes.ContentState
+    let mood: Mood
+
+    var body: some View {
+        Group {
+            if mood == .angry {
+                Text(state.startedAt, style: .timer)
+            } else {
+                Text(timerInterval: state.startedAt...state.limitAt, countsDown: false)
+            }
+        }
+        .font(.system(size: 13, weight: .semibold).monospacedDigit())
+        .foregroundStyle(mood.color)
+        .multilineTextAlignment(.center)
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
+        .frame(maxWidth: .infinity)
     }
 }
 

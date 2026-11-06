@@ -386,6 +386,9 @@ shows the golem in its tiny "minimal" slot. That slot used to hold his
 eyes, so the timer disappeared exactly when you were scrolling with
 music on. Now it holds a small timer instead; its colour still carries
 his mood. The slot is only about 40 points wide, so the digits are small.
+It fills the slot, centred, and shrinks to fit so "12:34" isn't cut off.
+A shorter "11s" / "3m" was wanted, but only iOS can tick a timer while
+you scroll, and it does so only as m:ss or full words ("11 seconds").
 
 ## Open questions
 
