@@ -390,6 +390,21 @@ It fills the slot, centred, and shrinks to fit so "12:34" isn't cut off.
 A shorter "11s" / "3m" was wanted, but only iOS can tick a timer while
 you scroll, and it does so only as m:ss or full words ("11 seconds").
 
+## 25. Groups are chips under the golem (2026-11-06)
+
+The group rows took a lot of room for a name and a number. Now each group
+is a small chip ("Reels · 5m"), orange or red with the time to go while it
+rests. Tapping one opens a panel right under the chips with everything
+about the group as a short list: its name, its limit, its apps (with
+Screen Time) and Delete, so there's no separate edit screen any more.
+Delete asks first, and the confirmation is where it reminds you to also
+delete the group's two automations in Shortcuts. A drawer sheet was the other idea, but chips keep the golem
+the only thing on the page.
+
+The screen also has an entrance: the golem fades in out of the dark, then
+the chips float up one after another and keep hovering gently, like the
+app bubbles on an Apple Watch. Reduce Motion turns this into a plain fade.
+
 ## Open questions
 
 - Does iOS let the on-device model write lines in the background (during

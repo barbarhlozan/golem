@@ -1,44 +1,46 @@
 import GolemKit
 import SwiftUI
 
-/// The main screen: the golem big, how he feels and why, then your groups.
-/// Everything else (automations, blocking, the debug menu) is behind the
-/// gear in `SettingsView`.
+/// The main screen: the golem big, how he feels and why, and your groups
+/// as small chips under him. Everything else (automations, blocking, the
+/// debug menu) is behind the gear in `SettingsView`.
 ///
 /// It follows Apple's conventions: the buttons ("+" to add a group, the
-/// gear) live in the navigation bar, and the groups are a real
-/// list, so rows highlight when tapped and swipe left to delete. It's
-/// always dark (`Theme.night`): the white golem reads best on the ink of
-/// his own outline.
+/// gear) live in the navigation bar. It's always dark (`Theme.night`):
+/// the white golem reads best on the ink of his own outline.
+///
+/// On opening, the golem fades in out of the dark, and then the chips
+/// float up after him (`GroupChips`).
 struct HomeView: View {
     @Environment(GolemModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var isShowingSettings = false
     @State private var isShowingSetupGuide = false
-    // Heights for centring the content when it fits (`topMargin`). They're
-    // the screen's and the rows' own, which moving the content doesn't
-    // change, so measuring can't loop.
-    @State private var screenHeight: CGFloat = 0
-    @State private var moodHeight: CGFloat = 0
-    @State private var rowHeights: [UUID: CGFloat] = [:]
+    /// False for the first frame, so the entrance has something to animate from.
+    @State private var hasAppeared = false
 
     var body: some View {
         NavigationStack {
-            List {
-                GolemMood(isShowingSetupGuide: $isShowingSetupGuide)
-                    .frame(maxWidth: .infinity)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { moodHeight = $0 }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
+            GeometryReader { screen in
+                ScrollView {
+                    VStack(spacing: 28) {
+                        GolemMood(isShowingSetupGuide: $isShowingSetupGuide)
+                            .opacity(hasAppeared ? 1 : 0)
+                            .scaleEffect(hasAppeared || reduceMotion ? 1 : 0.94)
+                            .blur(radius: hasAppeared || reduceMotion ? 0 : 8)
 
-                groups
+                        GroupChips(isShown: hasAppeared)
+                    }
+                    .padding(.horizontal, 24)
+                    // Centred when it fits; a little above the middle, where
+                    // the eye puts it.
+                    .padding(.bottom, 40)
+                    .frame(maxWidth: .infinity, minHeight: screen.size.height)
+                }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .contentMargins(.top, topMargin, for: .scrollContent)
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
             .background(Theme.night)
             // No visible title: the golem is the heading. The title is still
             // set, so screens pushed from here get "‹ Golem" as their back
@@ -66,11 +68,14 @@ struct HomeView: View {
         // The whole stack, so the toolbar's ink turns light too, and the
         // screens pushed from here match the dark page.
         .environment(\.colorScheme, .dark)
+        .onAppear {
+            withAnimation(.easeOut(duration: reduceMotion ? 0.3 : 1.2)) { hasAppeared = true }
+        }
         .task {
             await model.requestPermissions()
         }
         // While the golem rests, used time flows back by the second: re-read
-        // it so the rows and his mood keep up.
+        // it so the chips and his mood keep up.
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
@@ -83,55 +88,12 @@ struct HomeView: View {
         }
     }
 
-    // MARK: Parts
-
-    /// One row per group, with thin lines only between them. The row draws
-    /// its own arrow (next to the limit), so the list's built-in one is
-    /// hidden by putting the link behind the row.
-    private var groups: some View {
-        @Bindable var model = model
-        let firstID = model.settings.groups.first?.id
-        let lastID = model.settings.groups.last?.id
-
-        return ForEach($model.settings.groups) { $group in
-            GroupRow(
-                group: group,
-                usedSeconds: model.usedSeconds(of: group),
-                isOverLimit: model.isOverLimit(group)
-            )
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[group.id] = $0 }
-            .background {
-                NavigationLink {
-                    GroupEditView(group: $group)
-                } label: {
-                    EmptyView()
-                }
-                .opacity(0)
-            }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24))
-            .listRowSeparatorTint(Theme.ink.opacity(0.25))
-            .listRowSeparator(group.id == firstID ? .hidden : .automatic, edges: .top)
-            .listRowSeparator(group.id == lastID ? .hidden : .automatic, edges: .bottom)
-        }
-        .onDelete { offsets in
-            let ids = offsets.map { model.settings.groups[$0].id }
-            ids.forEach(model.deleteGroup(id:))
-        }
-    }
-
-    /// When everything fits, half the free room goes above it, so it sits
-    /// in the middle instead of leaving the bottom empty. A little less
-    /// than half: optical centre sits slightly above the real one.
-    private var topMargin: CGFloat {
-        let content = moodHeight + 16 + model.settings.groups.reduce(0) { $0 + (rowHeights[$1.id] ?? 0) }
-        return max(0, (screenHeight - content) / 2 - 40)
-    }
-
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button(GolemVoice.newGroupButton, systemImage: "plus") { model.addGroup() }
+            Button(GolemVoice.newGroupButton, systemImage: "plus") {
+                withAnimation(.snappy) { model.addGroup() }
+            }
             Button("Settings", systemImage: "gearshape") { isShowingSettings = true }
         }
     }

@@ -31,19 +31,37 @@ extension GolemVoice {
     public static let homeUnseenDetail = "He has not yet seen an app open."
     public static let homeSetUpButton = "Set up automations"
 
-    // MARK: Group rows
+    // MARK: Group chips
 
-    public static func groupLimit(minutes: Int) -> String {
-        "\(minutes) min limit"
+    /// A chip under the golem: the group and its limit, "Reels · 5m".
+    public static func groupChip(name: String, limitMinutes: Int) -> String {
+        "\(name) · \(limitMinutes)m"
     }
 
-    /// While the golem rests and the used time flows back.
-    public static func groupResting(time: String) -> String {
-        "Resting, \(time) to go"
+    /// While the group rests: the time until it's fresh, "Feeds · 2:30".
+    public static func groupChipResting(name: String, time: String) -> String {
+        "\(name) · \(time)"
     }
-    public static func groupOverLimit(time: String) -> String {
-        "Over the limit, \(time) to go"
+
+    // MARK: Group panel (what a chip opens)
+
+    public static let groupNamePlaceholder = "Name, e.g. Reels"
+    public static func groupLimitStepper(minutes: Int) -> String {
+        "Limit: \(minutes) min"
     }
+    /// With Screen Time: picks the apps the group blocks.
+    public static func groupAppsButton(count: Int) -> String {
+        switch count {
+        case 0: "Choose apps…"
+        case 1: "1 app"
+        default: "\(count) apps"
+        }
+    }
+    public static let groupDeleteButton = "Delete"
+    public static func groupDeleteTitle(name: String) -> String {
+        "Delete \(name)?"
+    }
+    public static let groupDeleteHint = "Also delete its two automations in Shortcuts."
 
     public static let newGroupButton = "New group"
 
